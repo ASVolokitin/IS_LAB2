@@ -8,14 +8,13 @@ import com.ticket_is.app.exception.ResourceNotFoundException;
 import com.ticket_is.app.model.Ticket;
 import com.ticket_is.app.repository.TicketRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-
-    public TicketService(TicketRepository collectionRepository) {
-        this.ticketRepository = collectionRepository;
-    }
     
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
@@ -24,5 +23,15 @@ public class TicketService {
     public Ticket getTicketByIdOrThrow(Long id) {
         return ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+    }
+
+    public void deleteTicketById(Long id) throws ResourceNotFoundException {
+        ticketRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(String.format("Ticket was not found with id %d", id)));
+        ticketRepository.deleteById(id);
+    }
+
+    public void saveOrUpdate(Ticket ticket) {
+        ticketRepository.save(ticket);
     }
 }

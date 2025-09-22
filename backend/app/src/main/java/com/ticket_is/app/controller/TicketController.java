@@ -1,12 +1,10 @@
 package com.ticket_is.app.controller;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,18 +14,16 @@ import com.ticket_is.app.exception.ResourceNotFoundException;
 import com.ticket_is.app.model.Ticket;
 import com.ticket_is.app.service.TicketService;
 
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/main")
+@RequestMapping("/tickets")
 public class TicketController {
 
     private final TicketService ticketService;
 
-    public TicketController(TicketService collectionService) {
-        this.ticketService = collectionService;
-    }
-
-    @GetMapping("/list")
+    @GetMapping("/")
     public List<Ticket> getALlTickets() {
         return ticketService.getAllTickets();
     }
@@ -38,12 +34,18 @@ public class TicketController {
             Ticket ticket = ticketService.getTicketByIdOrThrow(id);
             return ResponseEntity.ok(ticket);
         } catch (ResourceNotFoundException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            error.put("timestamp", LocalDateTime.now().toString());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTicketById(@PathVariable Long id) {
+        try{ 
+            ticketService.deleteTicketById(id);
+            return ResponseEntity.ok(String.format("Deleted ticket with id %d", id));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Ticket with id %d was not found", id));
+        }
     }
     
     
