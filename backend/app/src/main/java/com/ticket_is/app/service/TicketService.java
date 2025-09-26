@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.ticket_is.app.exception.ResourceNotFoundException;
+import com.ticket_is.app.exception.notFoundException.TicketNotFoundException;
 import com.ticket_is.app.model.Ticket;
 import com.ticket_is.app.repository.TicketRepository;
 
@@ -15,23 +15,18 @@ import lombok.RequiredArgsConstructor;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    
+
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
     }
 
-    public Ticket getTicketByIdOrThrow(Long id) {
+    public Ticket getTicketById(Long id) {
         return ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+        .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
-    public void deleteTicketById(Long id) throws ResourceNotFoundException {
-        ticketRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format("Ticket was not found with id %d", id)));
-        ticketRepository.deleteById(id);
-    }
-
-    public void saveOrUpdate(Ticket ticket) {
-        ticketRepository.save(ticket);
+    public void deleteTicketById(Long id) {
+        Ticket ticket = getTicketById(id);
+        ticketRepository.delete(ticket);
     }
 }

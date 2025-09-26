@@ -7,4 +7,6 @@ import com.ticket_is.app.model.Coordinates;
 
 @Repository
 public interface  CoordinatesRepository extends JpaRepository<Coordinates, Long>{
+
+    public void deleteCoordinatesById(Long id);
 }

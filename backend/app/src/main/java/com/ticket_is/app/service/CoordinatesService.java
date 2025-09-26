@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.ticket_is.app.exception.ResourceNotFoundException;
+import com.ticket_is.app.exception.SQLConstraintViolationException;
+import com.ticket_is.app.exception.notFoundException.CoordinatesNotFoundException;
 import com.ticket_is.app.model.Coordinates;
 import com.ticket_is.app.repository.CoordinatesRepository;
 
@@ -16,13 +17,18 @@ public class CoordinatesService {
 
     private final CoordinatesRepository coordinatesRepository;
     
-    public List<Coordinates> getALlTickets() {
+    public List<Coordinates> getALlCoordinates() {
         return coordinatesRepository.findAll();
     }
 
-    public void deleteCoordinatesById(Long id) throws ResourceNotFoundException {
-        coordinatesRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format("Coordinates were not found with id %d", id)));
-        coordinatesRepository.deleteById(id);
+    public Coordinates getCoordinatesById(Long id) {
+        return coordinatesRepository.findById(id)
+        .orElseThrow(() -> new CoordinatesNotFoundException(id));
+    }
+
+    public void deleteCoordinatesById(Long id) throws SQLConstraintViolationException {
+        Coordinates coordinates = getCoordinatesById(id);
+        coordinatesRepository.delete(coordinates);
+        
     }
 }

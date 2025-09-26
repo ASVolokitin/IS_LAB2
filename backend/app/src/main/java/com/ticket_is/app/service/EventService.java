@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.ticket_is.app.exception.ResourceNotFoundException;
+import com.ticket_is.app.exception.notFoundException.EventNotFoundException;
 import com.ticket_is.app.model.Event;
 import com.ticket_is.app.repository.EventRepository;
 
@@ -20,10 +20,14 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public void deleteEventById(Integer id) throws ResourceNotFoundException {
-        eventRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format("Event was not found with id %d", id)));
-        eventRepository.deleteById(id);
+    public Event getEventById(Integer id) {
+        return eventRepository.findById(id)
+        .orElseThrow(() -> new EventNotFoundException(id));
+    }
+
+    public void deleteEventById(Integer id) {
+        Event event = getEventById(id);
+        eventRepository.delete(event);
     }
     
 }
