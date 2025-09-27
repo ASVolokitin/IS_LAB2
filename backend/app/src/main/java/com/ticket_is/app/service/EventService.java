@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.ticket_is.app.dto.request.EventRequest;
 import com.ticket_is.app.exception.notFoundException.EventNotFoundException;
 import com.ticket_is.app.model.Event;
 import com.ticket_is.app.repository.EventRepository;
@@ -28,6 +29,20 @@ public class EventService {
     public void deleteEventById(Integer id) {
         Event event = getEventById(id);
         eventRepository.delete(event);
+    }
+
+    public void createEvent(EventRequest request) {
+        Event event = new Event(request.name(), request.date(), request.minAge(), request.description());
+        eventRepository.save(event);
+    }
+
+    public void updateEvent(Integer id, EventRequest request) {
+        Event event = getEventById(id);
+        event.setName(request.name());
+        event.setDate(request.date());
+        event.setMinAge(request.minAge());
+        event.setDescription(request.description());
+        eventRepository.save(event);
     }
     
 }

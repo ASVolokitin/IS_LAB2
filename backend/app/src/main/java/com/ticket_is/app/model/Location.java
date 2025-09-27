@@ -9,9 +9,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name="locations")
 public class Location implements Serializable{
     
@@ -29,4 +31,11 @@ public class Location implements Serializable{
 
     @NotNull
     private String name; //Поле может быть null
+
+    public Location(Float x, int y, Double z, String name) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.name = name;
+    }
 }

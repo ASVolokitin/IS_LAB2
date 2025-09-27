@@ -13,46 +13,45 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ticket_is.app.dto.request.EventRequest;
-import com.ticket_is.app.model.Event;
-import com.ticket_is.app.service.EventService;
+import com.ticket_is.app.dto.request.LocationRequest;
+import com.ticket_is.app.model.Location;
+import com.ticket_is.app.service.LocationService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/locations")
 @RequiredArgsConstructor
-public class EventController {
+public class LocationController {
 
-    private final EventService eventService;
+    private final LocationService locationService;
 
     @GetMapping
-    public List<Event> getAllCoordinates() {
-        return eventService.getAllEvents();
+    public List<Location> getAllCoordinates() {
+        return locationService.getAllLocations();
     }
 
     @GetMapping("/{id}")
-    public Event getCoordinatesById(@PathVariable Integer id) {
-        return eventService.getEventById(id);
+    public Location getCoordinatesById(@PathVariable Long id) {
+        return locationService.getLocationById(id);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCoordinatesById(@PathVariable Integer id) {
-        eventService.deleteEventById(id);
+    public ResponseEntity<Void> deleteCoordinatesById(@PathVariable Long id) {
+        locationService.deleteLocationById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping
-    public ResponseEntity<?> createCoordinates(@Valid @RequestBody EventRequest request) {
-        eventService.createEvent(request);
+    public ResponseEntity<?> createCoordinates(@Valid @RequestBody LocationRequest request) {
+        locationService.createLocation(request);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCoordinates(@PathVariable Integer id, @Valid @RequestBody EventRequest request) {
-        eventService.updateEvent(id, request);
+    public ResponseEntity<?> updateCoordinates(@PathVariable Long id, @Valid @RequestBody LocationRequest request) {
+        locationService.updateLocation(id, request);
         return ResponseEntity.noContent().build();
     }
-        
 }

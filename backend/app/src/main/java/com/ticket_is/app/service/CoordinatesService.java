@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.ticket_is.app.exception.SQLConstraintViolationException;
+import com.ticket_is.app.dto.request.CoordinatesRequest;
 import com.ticket_is.app.exception.notFoundException.CoordinatesNotFoundException;
 import com.ticket_is.app.model.Coordinates;
 import com.ticket_is.app.repository.CoordinatesRepository;
@@ -26,9 +26,20 @@ public class CoordinatesService {
         .orElseThrow(() -> new CoordinatesNotFoundException(id));
     }
 
-    public void deleteCoordinatesById(Long id) throws SQLConstraintViolationException {
+    public void deleteCoordinatesById(Long id) {
         Coordinates coordinates = getCoordinatesById(id);
-        coordinatesRepository.delete(coordinates);
-        
+        coordinatesRepository.delete(coordinates);  
+    }
+
+    public void createCoordinates(CoordinatesRequest request) {
+        Coordinates coordinates = new Coordinates(request.x(), request.y());
+        coordinatesRepository.save(coordinates);
+    }
+
+    public void updateCoordinates(Long id, CoordinatesRequest request) {
+        Coordinates coordinates = getCoordinatesById(id);
+        coordinates.setX(request.x());
+        coordinates.setY(request.y());
+        coordinatesRepository.save(coordinates);
     }
 }

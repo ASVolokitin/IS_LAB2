@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.ticket_is.app.dto.request.PersonRequest;
 import com.ticket_is.app.exception.notFoundException.PersonNotFoundException;
 import com.ticket_is.app.model.Person;
 import com.ticket_is.app.repository.PersonRepository;
@@ -28,6 +29,11 @@ public class PersonService {
     public void deletePersonById(Long id) {
         Person person = getPersonById(id);
         personRepository.delete(person);
+    }
+
+    public void createPerson(PersonRequest request) {
+        Person person = new Person(request.getEyeColor(), request.getHairColor(), request.location(), request.passportID(), request.nationality());
+        personRepository.save(person);
     }
     
 }
