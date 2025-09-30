@@ -10,7 +10,7 @@ export const NavBar = () => {
   const navItems = [
     { path: "/", label: "Main" },
     { path: "/sql", label: "SQL Queries" },
-    { path: "/create", label: "Create new ticket" }
+    { path: "/tickets/create", label: "Create new ticket" }
   ];
 
   useEffect(() => {

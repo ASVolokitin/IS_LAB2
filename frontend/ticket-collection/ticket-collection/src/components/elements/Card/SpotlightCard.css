@@ -1,4 +1,6 @@
 .card-spotlight {
+  display: flex;
+  flex-direction: column;
   position: relative;
   border-radius: 1.5rem;
   border: 1px solid #222;

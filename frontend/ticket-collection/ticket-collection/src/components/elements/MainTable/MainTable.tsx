@@ -1,27 +1,41 @@
 import { useEffect, useState } from "react";
 import { Ticket } from "../../../interfaces/Ticket";
-import { getTickets } from "../../../services/api";
+import { deleteTicket, getTickets } from "../../../services/api";
 import React from "react";
 import { columns } from "../../../interfaces/dataRepresentation/mainTableCoumns";
 import { getNestedValue, renderCell } from "../../../services/mainPageUtils";
 
+import "./../Button/Button.css";
 
 const MainTable = () => {
-
   type SortOrder = "asc" | "desc" | null;
 
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
   const [data, setData] = useState<Ticket[]>([]);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
+  const updateTickets = () => {
     getTickets()
       .then((res) => {
         setData(res.data);
         console.log(res.data);
       })
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    updateTickets();
   }, []);
+
+  const handleDelete = async (ticketId: number) => {
+    try {
+      await deleteTicket(ticketId);
+      await updateTickets();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSort = (field: string) => {
     if (sortField !== field) {
@@ -87,18 +101,29 @@ const MainTable = () => {
         </tr>
       </thead>
       <tbody>
-        {sortedData.map((row, i) => (
-          <tr key={i}>
+        {sortedData.map((row) => (
+          <tr
+            key={row.id}
+            className={deletingId === row.id ? "tr-deleting" : ""}
+          >
             {columns.map((col) => (
-              <td key={col.field}>
-                {renderCell(row, col.field)}
-              </td>
+              <td key={col.field}>{renderCell(row, col.field)}</td>
             ))}
+            <td>
+              <div className="button-container">
+                <button
+                  className="glass-button"
+                  onClick={() => handleDelete(row.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
   );
-}
+};
 
 export default MainTable;

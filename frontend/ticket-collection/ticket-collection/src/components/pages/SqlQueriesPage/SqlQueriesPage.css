@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
-  padding: 20px;
+  padding: 120px 20px 20px 20px;
   justify-items: center;
   align-items: stretch;
   animation: fadeInContainer 0.5s ease forwards;
@@ -28,11 +28,3 @@
   transform: translateY(3px) scale(1.03);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
-
-
-.input-value-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-

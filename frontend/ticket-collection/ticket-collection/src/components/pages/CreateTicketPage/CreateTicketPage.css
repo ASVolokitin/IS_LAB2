@@ -1,0 +1,124 @@
+.ticket-form-page {
+  min-height: 100vh;
+  background: #0f0f0f;
+  padding: 160px 20px;
+}
+
+.ticket-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-container h1 {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.form-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.form-section h2 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.object-field {
+  margin-bottom: 24px;
+}
+
+.object-field label {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.object-field-controls {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.object-field-controls select {
+  flex: 1;
+}
+
+.object-field-controls .outline-button {
+  white-space: nowrap;
+  min-width: 140px;
+}
+
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-actions .primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@media (max-width: 768px) {
+  .form-page {
+    padding: 20px 16px;
+  }
+  
+  .form-section {
+    padding: 24px 20px;
+  }
+  
+  .object-field-controls {
+    flex-direction: column;
+  }
+  
+  .object-field-controls .outline-button {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+.server-status-container {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}

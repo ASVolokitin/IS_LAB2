@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import SpotlightCard from "../../elements/Card/SpotlightCard";
 import "./SqlQueriesPage.css";
+import '../../elements/Button/Button.css'
 import {
   cancelBookingsByPersonId,
   getTicketsAmountByNumberEquals,
@@ -8,6 +9,9 @@ import {
   getTicketsGroupedByCoordinates,
 } from "../../../services/api";
 import { NavBar } from "../../elements/NavBar/NavBar";
+import { Link } from "react-router-dom";
+
+import '../../elements/Input/Input.css'
 
 export const SqlQueriesPage = () => {
   const [countGroupedByCoordinatesResult, setCountGroupedByCoordinatesResult] =
@@ -46,7 +50,7 @@ export const SqlQueriesPage = () => {
       .catch((err) => console.error(err));
   }, [countByNumberLessField]);
 
-  const cancelBookings = () => {
+  const cancelBookings = async () => {
     if (!cancelBookingPersonIdField) {
       console.error("personId не задан");
       return;
@@ -70,7 +74,9 @@ export const SqlQueriesPage = () => {
             Group objects by the coordinates field value and return the number
             of items in each group.
           </p>
-          <p>Click me</p>
+          <Link to="/sql/calculate_groups">
+            <input type="button" value="Calculate" className="glass-button"></input>
+          </Link>
         </SpotlightCard>
 
         <SpotlightCard>
@@ -79,8 +85,10 @@ export const SqlQueriesPage = () => {
             Return the number of tickets with the value of the "number" field
             equal to the specified one.
           </p>
-          <div className="input-value-row">
+          <div className="input-container">
+                <div className="input-value-row">
             <input
+              className="glass-input"
               type="number"
               onChange={(e) =>
                 setCountByNumberEqualsField(Number(e.target.value))
@@ -88,6 +96,8 @@ export const SqlQueriesPage = () => {
             ></input>
             <h2>{countByNumberEqualsResult}</h2>
           </div>
+          </div>
+          
         </SpotlightCard>
 
         <SpotlightCard>
@@ -96,8 +106,10 @@ export const SqlQueriesPage = () => {
             Return the number of tickets with the value of the "number" field
             less than the specified one.
           </p>
-          <div className="input-value-row">
+          <div className="input-container">
+            <div className="input-value-row">
             <input
+              className="glass-input"
               type="number"
               onChange={(e) =>
                 setCountByNumberLessField(Number(e.target.value))
@@ -105,36 +117,41 @@ export const SqlQueriesPage = () => {
             ></input>
             <h2>{countByNumberLessResult}</h2>
           </div>
+          </div>
+          
         </SpotlightCard>
 
         <SpotlightCard>
           <h1>Sell ticket</h1>
           <p>Sell a ticket for a specified amount to a specified person.</p>
-          <p>Click me</p>
+          <div className="input-container">
+              <Link to="/sql/sell">
+            <input type="button" value="Sell" className="glass-button"></input>
+          </Link>
+          </div>
+          
         </SpotlightCard>
 
         <SpotlightCard>
           <h1>Cancel all bookings</h1>
           <p>
-            Cancel all bookings of the specified person by deleting his ID from
+            Cancel all bookings of the specified person by deleting his person ID from
             all tickets.
           </p>
-          <div className="input-value-row">
+          <div className="input-container">
+                <div className="input-value-row">
             <input
+              className="glass-input"
               type="number"
               onChange={(e) =>
                 setCancelBookingPersonIdField(Number(e.target.value))
               }
             ></input>
-            <input
-              value="Send"
-              type="button"
-              onClick={() => cancelBookings()}
-            ></input>
+            <input type="button" value="Send" className="glass-button" onClick={() => cancelBookings()}></input>
           </div>
-          <div className="result-contaier">
-            <p>{cancelBookingPersonIdResult}</p>
+          <p>{cancelBookingPersonIdResult}</p>
           </div>
+          
         </SpotlightCard>
       </div>
     </>
