@@ -1,6 +1,6 @@
-export interface Event {
+export interface TicketEventDTO {
     name: string;
-    date: string;
+    date: Date;
     minAge: number;
     description: string;
 }

@@ -1,5 +1,4 @@
-export interface Venue {
-    id: number;
+export interface VenueDTO {
     name: string;
     capacity: number;
     type: string;
