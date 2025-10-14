@@ -29,7 +29,6 @@ class WebSocketService {
 
       this.pendingSubscriptions.forEach(({ topic, callback }) => {
         if (this.client?.active) {
-          devLog.log(`subscribed to ${topic}`);
           this.client.subscribe(topic, callback);
         } else {
           devLog.warn("[WS] Tried to subscribe but client not active yet:", topic);
