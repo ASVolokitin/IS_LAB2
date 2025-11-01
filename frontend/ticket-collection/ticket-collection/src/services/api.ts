@@ -6,8 +6,9 @@ import { TicketEventDTO } from "../interfaces/dto/TicketEventDTO";
 import { VenueDTO } from "../interfaces/dto/VenueDTO";
 import { LocationDTO } from "../interfaces/dto/LocationDTO";
 import { SellTicketDTO } from "../interfaces/dto/SellTicketDTO";
+import { SortOrder } from "../types/SortOrder";
 
-const BASE_URL = "http://localhost:8081"
+const BASE_URL = process.env.REACT_APP_API_URL
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -16,8 +17,7 @@ const api = axios.create({
     },
 });
 
-// export const getTicketsPage = (page: number, size: number, sortColumn: string, sortDirection: string) => api.get(`/tickets?page=${page}&size=${size}&{sort=${sortColumn},${sortDirection}}`);
-export const getTicketsPage = (page: number, size: number, sortColumn?: string, sortDirection?: string | null) => api.get(`/tickets?page=${page}&size=${size}${sortDirection ? `&sort=${sortColumn},${sortDirection}` : ""}`);
+export const getTicketsPage = (page: number, size: number, sortField?: string, sortOrder?: SortOrder, filters?: string) => api.get(`/tickets?page=${page}&size=${size}${sortOrder ? `&sort=${sortField},${sortOrder}` : ""}${filters ? filters : ""}`);
 
 
 export const getAllTickets = () => api.get("/tickets/all");

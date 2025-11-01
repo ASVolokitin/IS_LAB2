@@ -1,6 +1,6 @@
 export interface EventFormData {
   name: string;
-  date: string;
-  minAge: string;
+  date: string | null;
+  minAge: string | null;
   description: string;
 }

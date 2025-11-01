@@ -1,3 +1,5 @@
+// DEPRECATED
+
 import { useEffect, useState } from "react";
 import { LocationFormData } from "../interfaces/formData/LocationFormData";
 import { Location } from "../interfaces/Location";
@@ -19,7 +21,6 @@ export const useLocationForm = (initialData?: Location) => {
   });
 
   useEffect(() => {
-    console.log(initialData);
     if (initialData) {
       setFormData({
         x: String(initialData.x),

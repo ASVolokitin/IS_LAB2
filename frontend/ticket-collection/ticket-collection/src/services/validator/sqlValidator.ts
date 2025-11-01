@@ -8,7 +8,6 @@ export const validateSqlField = (name: keyof SqlFormData, value: string) => {
 
 
     const numValue = Number(value);
-    console.log(numValue);
 
     switch (name) {
         case "equalInNumber":

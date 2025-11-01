@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Ticket } from "../../../interfaces/Ticket";
 import React from "react";
 import { columns } from "../../../interfaces/dataRepresentation/mainTableColumns";
-import { getNestedValue, renderCell } from "../../../services/mainPageUtils";
+import { renderCell } from "../../../services/mainPageUtils";
 
 import "./../Button/Button.css";
 import { Filter } from "../../../interfaces/FilterInterface";
@@ -32,19 +32,8 @@ const MainTable = ({
   const [sortField, setSortField] = useState<string | null>(initialSortField);
   const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder);
 
-  // const handleSortOrder = (field: string) => {
-  //   if (sortField !== field) {
-  //     setSortField(field);
-  //     setSortOrder("asc");
-  //   } else {
-  //     setSortOrder((prev) =>
-  //       prev === "asc" ? "desc" : prev === "desc" ? null : "asc"
-  //     );
-  //     if (sortOrder === "desc") setSortField(null);
-  //   }
-  // };
 
-  const handleSortOrder = (field: string) => {
+  const handleSortOrderChange = (field: string) => {
   let newSortField: string | null = field;
   let newSortOrder: SortOrder;
 
@@ -69,7 +58,7 @@ const MainTable = ({
             {columns.map((col) => (
               <th
                 key={col.field}
-                onClick={() => {handleSortOrder(col.field)}}
+                onClick={() => {handleSortOrderChange(col.field)}}
                 style={{ cursor: "pointer" }}
               >
                 {col.label}

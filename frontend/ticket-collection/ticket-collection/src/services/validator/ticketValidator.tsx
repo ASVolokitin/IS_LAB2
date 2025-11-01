@@ -1,9 +1,8 @@
 import { TicketFormData } from "../../interfaces/formData/TicketFormData";
-import { TicketDTO } from "../../interfaces/dto/TicketDTO";
 
 export const validateTicketField = (
-  name: keyof TicketDTO,
-  value: any
+  name: keyof TicketFormData,
+  value: any 
 ): string => {
   switch (name) {
     case "name":
@@ -16,8 +15,8 @@ export const validateTicketField = (
       return "";
 
     case "discount":
-      if (value && (Number(value) < 0 || Number(value) > 100))
-        return "Discount should be between 0 and 100";
+      if (value !== "" && value && (Number(value) <= 0 || Number(value) > 100))
+        return "Discount should be a positive integer 1 and 100";
       return "";
 
     case "number":

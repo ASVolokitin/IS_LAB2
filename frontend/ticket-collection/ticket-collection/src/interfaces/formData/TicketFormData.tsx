@@ -7,6 +7,6 @@ export interface TicketFormData {
     type: string | null,
     discount: string | null,
     number: string,
-    refundable: string,
+    refundable: boolean,
     venueId: string
 }

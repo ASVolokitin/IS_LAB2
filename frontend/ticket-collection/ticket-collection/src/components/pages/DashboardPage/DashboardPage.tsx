@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { EntityData, EntityType } from "../../../types/ConnectedObject";
@@ -9,12 +9,6 @@ import {
   deletePerson,
   deleteTicket,
   deleteVenue,
-  getCoordinates,
-  getEvents,
-  getLocations,
-  getPersons,
-  getAllTickets,
-  getVenues,
   updateCoordinates,
   updateEvent,
   updateLocation,
@@ -34,84 +28,54 @@ import { EditCoordinatesModal } from "../../elements/Modal/EditCoordinatesModal/
 import { EditLocationModal } from "../../elements/Modal/EditLocationModal/EditLocationModal";
 import { EditPersonModal } from "../../elements/Modal/EditPersonModal/EditPersonModal";
 import { EditTicketModal } from "../../elements/Modal/EditTicketModal/EditTicketModal";
+import { useEntities } from "../../../hooks/useEntities";
+import { devLog } from "../../../services/logger";
+import { convertResponseToFormData } from "../../converters/ResponseToFormDataConverter";
 
 export const EntitiesDashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<EntityType>("tickets");
-  const [entities, setEntities] = useState<EntityData[]>([]);
+  const [mappedEntities, setMappedEntities] = useState<EntityData[]>([]);
+
+  const [selectedType, setSelectedType] = useState<EntityType>(() => {
+    const saved = localStorage.getItem("selectedType");
+    return (saved as EntityType) || "tickets";
+  });
+
+  const handleChangeSelectedType = (type: EntityType) => {
+    setSelectedType(type)
+    localStorage.setItem("selectedType", type);
+  }
+
 
   const [activeModal, setActiveModal] = useState<{
     type: ModalType | null;
     data: any;
+    elementId: number;
   }>({
     type: null,
     data: null,
+    elementId: -1
   });
 
-  const closeModal = () => {
-    setActiveModal({ type: null, data: null });
-  };
+  const closeModal = useCallback(() => {
+    setActiveModal({ type: null, data: null, elementId: -1 });
+  }, [setActiveModal]);
 
+
+  const hookedEntities = useEntities(selectedType).entities;
 
   useEffect(() => {
-    loadEntities(selectedType);
-    console.log("loaded entites", entities);
-    const intervalId = setInterval(() => {
-    loadEntities(selectedType);
-  }, 1000);
-    return () => clearInterval(intervalId);
-    
-  }, [selectedType]);
-
-  const loadEntities = async (type: EntityType) => {
-    if (type === undefined) return [];
-    try {
-      let response;
-      
-      switch (type) {
-        case "tickets":
-          
-          response = await getAllTickets();
-          break;
-        case "coordinates":
-          
-          response = await getCoordinates();
-          break;
-        case "persons":
-          response = await getPersons();
-          break;
-        case "venues":
-          response = await getVenues();
-          break;
-        case "events":
-          response = await getEvents();
-          break;
-        case "locations":
-          response = await getLocations();
-          break;
-        default:
-          console.log(type);
-          throw new Error(`Unknown entity type: ${type}`);
-      }
-
-      const mappedEntities = mapEntitiesByType(response?.data, type);
-      setEntities(mappedEntities);
-      console.log("mapped entities", mappedEntities);
-    } catch (error: any) {
-      console.error("Error loading entities:", error);
-      setError(error.response?.data?.message || "Error");
-      console.log("ERROR", error);
-      setTimeout(() => setError(null), 5000);
-      setEntities([]);
-    } 
-  };
+    if (hookedEntities) {
+      const mapped = mapEntitiesByType(hookedEntities, selectedType);
+      setMappedEntities(mapped);
+    }
+  }, [hookedEntities, selectedType]);
 
   const handleUpdateVenue = async (venueData: any) => {
-    updateVenue(activeModal.data.id, venueData)
+    updateVenue(activeModal.elementId, venueData)
       .then(() => {
         closeModal();
-        loadEntities("venues");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -121,10 +85,9 @@ export const EntitiesDashboard = () => {
   };
 
   const handleUpdateEvent = async (eventData: any) => {
-    updateEvent(activeModal.data.id, eventData)
+    updateEvent(activeModal.elementId, eventData)
       .then(() => {
         closeModal();
-        loadEntities("events");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -134,10 +97,9 @@ export const EntitiesDashboard = () => {
   };
 
   const handleUpdateCoordinates = async (coordinatesData: any) => {
-    updateCoordinates(activeModal.data.id, coordinatesData)
+    updateCoordinates(activeModal.elementId, coordinatesData)
       .then(() => {
         closeModal();
-        loadEntities("coordinates");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -147,10 +109,9 @@ export const EntitiesDashboard = () => {
   };
 
   const handleUpdateLocation = async (locationData: any) => {
-    updateLocation(activeModal.data.id, locationData)
+    updateLocation(activeModal.elementId, locationData)
       .then(() => {
         closeModal();
-        loadEntities("locations");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -160,10 +121,9 @@ export const EntitiesDashboard = () => {
   };
 
   const handleUpdatePerson = async (personData: any) => {
-    updatePerson(activeModal.data.id, personData)
+    updatePerson(activeModal.elementId, personData)
       .then(() => {
         closeModal();
-        loadEntities("persons");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -173,10 +133,10 @@ export const EntitiesDashboard = () => {
   };
 
   const handleUpdateTicket = async (ticketData: any) => {
-    updateTicket(activeModal.data.id, ticketData)
+    devLog.log("data to send", activeModal.data);
+    updateTicket(activeModal.elementId, ticketData)
       .then(() => {
         closeModal();
-        loadEntities("tickets");
       })
       .catch((error: any) => {
         const serverErrorMessage =
@@ -185,9 +145,40 @@ export const EntitiesDashboard = () => {
       });
   };
 
+  // const handleUpdate = async (id: number, type: EntityType, data: any) => {
+  //   try {
+  //     switch (type) {
+  //       case "tickets":
+  //         await updateTicket(id, data);
+  //         break;
+  //       case "coordinates":
+  //         await updateCoordinates(id, data);
+  //         break;
+  //       case "persons":
+  //         await updatePerson(id, data);
+  //         break;
+  //       case "venues":
+  //         await updateVenue(id, data);
+  //         break;
+  //       case "events":
+  //         await updateEvent(id, data);
+  //         break;
+  //       case "locations":
+  //         await updateLocation(id, data);
+  //         break;
+  //       default:
+  //         throw new Error(`Unknown entity type: ${type}`);
+  //     }
+  //   } catch (error: any) {
+  //     devLog.error(`Error updating ${type}:`, error);
+  //     const serverErrorMessage = error.response.data.message;
+  //     setError(serverErrorMessage || "Error");
+  //     console.log("ERROR", error);
+  //     setTimeout(() => setError(null), 5000);
+  //   }
+  // }
+
   const handleDelete = async (id: number, type: EntityType) => {
-    // if (!window.confirm("Are you sure you`re going to delete this object?"))
-    //   return;
 
     try {
       switch (type) {
@@ -212,93 +203,36 @@ export const EntitiesDashboard = () => {
         default:
           throw new Error(`Unknown entity type: ${type}`);
       }
-      setEntities((prev) => prev.filter((entity) => entity.id !== id));
+      // setMappedEntities((prev) => prev.filter((entity) => entity.id !== id));
     } catch (error: any) {
-      console.error("Error deleting entity:", error);
+      // console.error("Error deleting entity:", error);
       const serverErrorMessage = error.response.data.message;
       setError(serverErrorMessage || "Error");
-      console.log("ERROR", error);
+      // console.log("ERROR", error);
       setTimeout(() => setError(null), 5000);
     }
   };
 
-  const handleEdit = (entity: EntityData) => {
-    let modalData;
 
-    console.log("entity", entity);
 
-    switch (entity.type) {
-      case "venues":
-        modalData = {
-          id: entity.id,
-          name: entity.title,
-          capacity: entity.data.capacity,
-          type: entity.data.type,
-        };
-        break;
-      case "events":
-        modalData = {
-          id: entity.id,
-          name: entity.title,
-          description: entity.description,
-          eventType: entity.data.type,
-          minAge: entity.data.minAge === "No restrictions" ? "" : entity.data.minAge,
-          date: entity.data.date,
-        };
-        break;
-      case "coordinates":
-        modalData = {
-          id: entity.id,
-          x: entity.data.x,
-          y: entity.data.y,
-        };
-        break;
-        case "locations":
-        modalData = {
-          id: entity.id,
-          x: entity.data.x,
-          y: entity.data.y,
-          z: entity.data.z,
-          name: entity.title
-        };
-        break;
-        case "persons":
-        modalData = {
-          id: entity.id,
-          eyeColor: entity.data.eyeColor,
-          hairColor: entity.data.hairColor,
-          locationId: entity.data.locationId,
-          passportID: entity.data.passportID,
-          nationality: entity.data.nationality
-        };
-        break;
 
-        case "tickets":
-        modalData = {
-          id: entity.id,
-          name: entity.title,
-          price: entity.data.price,
-          number: entity.data.number,
-          discount: entity.data.discount ? parseFloat(entity.data.discount.replace("%", "")) : null,
-          refundable: entity.data.refundable ? "Yes" : "No",
-          type: entity.data.type === "Not defined" ? "" : entity.data.type,
-          coordinatesId: entity.data.coordinatesId,
-          venueId: entity.data.venueId,
-          personId: entity.data.personId,
-          eventId: entity.data.eventId
-        };
-        break;
-      default:
-        modalData = entity;
+  const handleEdit = (mappedEntity: EntityData) => {
+
+    const original = hookedEntities.find((e: any) => e.id === mappedEntity.id);
+    if (!original) {
+      setError(`Original entity not found for id ${mappedEntity.id}`);
+      return;
     }
-    
-    const modalType = `edit${
-      entity.type.charAt(0).toUpperCase() + entity.type.slice(1)
-    }` as ModalType;
+
+    devLog.log("original: ", original);
+
+    const modalType = `edit${mappedEntity.type.charAt(0).toUpperCase() + mappedEntity.type.slice(1)
+      }` as ModalType;
 
     setActiveModal({
       type: modalType,
-      data: modalData,
+      data: convertResponseToFormData(selectedType, original),
+      elementId: mappedEntity.id
     });
 
   };
@@ -306,6 +240,8 @@ export const EntitiesDashboard = () => {
   const handleCreateNew = () => {
     navigate(`/${selectedType}/create`);
   };
+
+
   return (
     <>
       <NavBar />
@@ -326,19 +262,19 @@ export const EntitiesDashboard = () => {
               ).map((type) => (
                 <button
                   key={type}
-                  className={`sidebar-item ${
-                    selectedType === type ? "sidebar-item-active" : ""
-                  }`}
-                  onClick={() => setSelectedType(type)}
+                  className={`sidebar-item ${selectedType === type ? "sidebar-item-active" : ""
+                    }`}
+                  onClick={() => handleChangeSelectedType(type)}
                 >
                   {type}
                 </button>
               ))}
+              <button className="create-button" onClick={handleCreateNew}>
+                + Create new
+              </button>
             </nav>
 
-            <button className="create-button" onClick={handleCreateNew}>
-              + Create new
-            </button>
+
           </aside>
 
           <main className="content">
@@ -347,16 +283,16 @@ export const EntitiesDashboard = () => {
               <p>Operating {selectedType.toLowerCase()}</p>
             </header>
 
-              <div className="cards-grid">
-                {entities.map((entity) => (
-                  <EntityCard
-                    key={entity.id}
-                    entity={entity}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
+            <div className="cards-grid">
+              {mappedEntities?.map((entity) => (
+                <EntityCard
+                  key={entity.id}
+                  entity={entity}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
           </main>
         </div>
         {activeModal.type === "editVenues" && (
@@ -364,7 +300,7 @@ export const EntitiesDashboard = () => {
             <EditVenueModal
               isOpen={true}
               onClose={closeModal}
-              venueId={activeModal.data.id}
+              venueId={activeModal.elementId}
               venueData={activeModal.data}
               onSave={handleUpdateVenue}
             />
@@ -375,7 +311,7 @@ export const EntitiesDashboard = () => {
           <EditEventModal
             isOpen={true}
             onClose={closeModal}
-            eventId={activeModal.data.id}
+            eventId={activeModal.elementId}
             eventData={activeModal.data}
             onSave={handleUpdateEvent}
           />
@@ -385,7 +321,7 @@ export const EntitiesDashboard = () => {
           <EditCoordinatesModal
             isOpen={true}
             onClose={closeModal}
-            coordinatesId={activeModal.data.id}
+            coordinatesId={activeModal.elementId}
             coordinatesData={activeModal.data}
             onSave={handleUpdateCoordinates}
           />
@@ -395,7 +331,7 @@ export const EntitiesDashboard = () => {
           <EditLocationModal
             isOpen={true}
             onClose={closeModal}
-            locationId={activeModal.data.id}
+            locationId={activeModal.elementId}
             locationData={activeModal.data}
             onSave={handleUpdateLocation}
           />
@@ -405,7 +341,7 @@ export const EntitiesDashboard = () => {
           <EditPersonModal
             isOpen={true}
             onClose={closeModal}
-            personId={activeModal.data.id}
+            personId={activeModal.elementId}
             personData={activeModal.data}
             onSave={handleUpdatePerson}
           />
@@ -415,7 +351,7 @@ export const EntitiesDashboard = () => {
           <EditTicketModal
             isOpen={true}
             onClose={closeModal}
-            ticketId={activeModal.data.id}
+            ticketId={activeModal.elementId}
             ticketData={activeModal.data}
             onSave={handleUpdateTicket}
           />

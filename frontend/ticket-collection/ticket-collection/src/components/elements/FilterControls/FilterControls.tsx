@@ -9,7 +9,20 @@ interface FilterControlsProps {
   onFilterChange: (field: FilterField, value: string) => void;
 }
 
-export const FilterControls = ({
+export function buildFilterParams(filter: Filter): string | undefined {
+  const params = new URLSearchParams();
+
+  Object.entries(filter).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') {
+      params.append(key, String(value));
+    }
+  });
+
+  const queryString = params.toString();
+  return queryString ? `&${queryString}` : "";
+}
+
+export const FilterBar = ({
   filters,
   onFilterChange,
 }: FilterControlsProps) => {
@@ -17,9 +30,10 @@ export const FilterControls = ({
     <div className="filters-container">
       <div className="filter-container">
         <input
-          value={filters.ticketNameFilter}
+          autoComplete="off"
+          value={filters.ticketName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onFilterChange("ticketNameFilter", e.target.value)
+            onFilterChange("ticketName", e.target.value)
           }
           className="glass-input"
           key="filter-ticket-name"
@@ -28,9 +42,10 @@ export const FilterControls = ({
       </div>
       <div className="filter-container">
         <input
-          value={filters.personPassportIDFilter}
+          autoComplete="off"
+          value={filters.personPassportID}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onFilterChange("personPassportIDFilter", e.target.value)
+            onFilterChange("personPassportID", e.target.value)
           }
           className="glass-input"
           key="filter-person-passportid"
@@ -39,9 +54,10 @@ export const FilterControls = ({
       </div>
       <div className="filter-container">
         <input
-          value={filters.eventDescriptionFilter}
+          autoComplete="off"
+          value={filters.eventDescription}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onFilterChange("eventDescriptionFilter", e.target.value)
+            onFilterChange("eventDescription", e.target.value)
           }
           className="glass-input"
           key="filter-event-description"
@@ -50,9 +66,10 @@ export const FilterControls = ({
       </div>
       <div className="filter-container">
         <input
-          value={filters.venueNameDescription}
+          autoComplete="off"
+          value={filters.venueName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onFilterChange("venueNameDescription", e.target.value)
+            onFilterChange("venueName", e.target.value)
           }
           className="glass-input"
           key="filter-venue-name"
@@ -61,6 +78,7 @@ export const FilterControls = ({
       </div>
       <div className="filter-container">
         <input
+          autoComplete="off"
           value={filters.personLocationName}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onFilterChange("personLocationName", e.target.value)
@@ -70,13 +88,13 @@ export const FilterControls = ({
           placeholder="Filter by location name"
         />
       </div>
-       <button 
-       className="glass-button"
-       onClick={() => {
-        (Object.keys(filters) as FilterField[]).forEach(key => {
-          onFilterChange(key, '');
-        });
-      }}>Reset</button>
+      <button
+        className="glass-button"
+        onClick={() => {
+          (Object.keys(filters) as FilterField[]).forEach(key => {
+            onFilterChange(key, '');
+          });
+        }}>Reset</button>
     </div>
   );
 };

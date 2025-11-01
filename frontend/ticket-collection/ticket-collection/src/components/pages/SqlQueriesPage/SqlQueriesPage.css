@@ -19,6 +19,32 @@
   }
 }
 
+.count-output-container {
+  min-height: 1.2em; 
+  padding-top: 10px;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.count-output-container:empty {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.error-message {
+  display: block;
+  min-height: 1.2em;
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+  transition: opacity 0.3s ease;
+}
+
+.error-message:empty {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .cards-container .card-spotlight {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -27,4 +53,24 @@
 .cards-container .card-spotlight:hover {
   transform: translateY(3px) scale(1.03);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+
+
+.validation-row {
+  min-height: 1.5em;
+  margin-top: 6px;
+  transition: opacity 0.3s ease;
+}
+
+.error-message,
+.count-output-container {
+  display: block;
+  min-height: 1.2em;
+}
+
+.error-message:empty,
+.count-output-container:empty {
+  opacity: 0;
+  visibility: hidden;
 }

@@ -1,8 +1,10 @@
-import React from "react";
-import { useVenueForm } from "../../../../hooks/useVenueForm";
-import { VENUE_TYPES } from "../../../../types/VenueType";
+import React, { useState } from "react";
 import { VenueModalProps } from "../../../../interfaces/editModalProps/VenueModalProps";
 import { useModalCloseEffect } from "../../../../hooks/useModalCloseEffect";
+import { Notification } from "../../Notification/Notification";
+import { VenueForm } from "../../Form/VenueForm";
+import { VenueDTO } from "../../../../interfaces/dto/VenueDTO";
+import { updateVenue } from "../../../../services/api";
 
 export const EditVenueModal = ({
   isOpen,
@@ -11,14 +13,9 @@ export const EditVenueModal = ({
   venueData,
   onSave,
 }: VenueModalProps) => {
-  const {
-    formData,
-    errors,
-    handleChange,
-    validateForm,
-    getSubmitData,
-    isFormValid,
-  } = useVenueForm(venueData);
+
+  const [serverError, setServerError] = useState<string | null>("");
+
 
   useModalCloseEffect(isOpen, onClose);
 
@@ -28,18 +25,11 @@ export const EditVenueModal = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    try {
-      await onSave(getSubmitData());
-      onClose();
-    } catch (error) {
-      console.error("Error saving venue:", error);
-    }
-  };
+  const handleSubmit = (dto: VenueDTO) => {
+      updateVenue(venueId, dto)
+        .then(() => onClose())
+        .catch((err) => setServerError(err.response.data.message));
+    };
 
   if (!isOpen) return null;
 
@@ -57,74 +47,17 @@ export const EditVenueModal = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="ticket-form">
-          <div className="form-section">
-            <div className="form-group">
-              <label htmlFor="edit-name">Name *</label>
-              <input
-                id="edit-name"
-                type="text"
-                className={`glass-input ${errors.name ? "input-error" : ""}`}
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="Enter venue name"
-              />
-              {errors.name && (
-                <span className="error-message">{errors.name}</span>
-              )}
-            </div>
+        <VenueForm onSubmit={handleSubmit} initialValues={venueData} onCancel={() => onClose()} />
 
-            <div className="form-group">
-              <label htmlFor="edit-capacity">Capacity *</label>
-              <input
-                id="edit-capacity"
-                type="number"
-                step="1"
-                className={`glass-input ${
-                  errors.capacity ? "input-error" : ""
-                }`}
-                value={formData.capacity}
-                onChange={(e) => handleChange("capacity", e.target.value)}
-                placeholder="Enter capacity"
-                min="1"
-              />
-              {errors.capacity && (
-                <span className="error-message">{errors.capacity}</span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="edit-type">Venue type</label>
-              <select
-                id="edit-type"
-                className="glass-select"
-                value={formData.type || ""}
-                onChange={(e) => handleChange("type", e.target.value || null)}
-              >
-                <option value="">Choose venue type</option>
-                {Object.entries(VENUE_TYPES).map(([key, value]) => (
-                  <option key={value} value={value}>
-                    {key}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button type="button" className="outline-button" onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="primary-button"
-              disabled={isFormValid}
-            >
-              Save
-            </button>
-          </div>
-        </form>
       </div>
+      {serverError && (
+        <Notification
+          message={serverError}
+          type="error"
+          isVisible={true}
+          onClose={() => setServerError(null)}
+        />
+      )}
     </div>
   );
 };

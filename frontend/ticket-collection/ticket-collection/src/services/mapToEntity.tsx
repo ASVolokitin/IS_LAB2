@@ -5,6 +5,7 @@ import { Coordinates } from "../interfaces/Сoordinates";
 import { TicketEvent } from "../interfaces/TicketEvent";
 import { EntityData, EntityType } from "../types/ConnectedObject";
 import { Location } from "../interfaces/Location";
+import { formattedDate } from "./format";
 
 export const mapTicketToEntity = (ticket: Ticket): EntityData => ({
   id: ticket.id,
@@ -15,15 +16,15 @@ export const mapTicketToEntity = (ticket: Ticket): EntityData => ({
   type: "tickets",
   data: {
     name: ticket.name,
-    coordinatesId: ticket.coordinates.id,
-    personId: ticket.person ?  ticket.person.id : "Not stated",
-    eventId: ticket.event ?  ticket.event.id : "Not stated",
+    coordinates: ticket.coordinates ? ticket.coordinates.id : "Not stated",
+    person: ticket.person ? ticket.person.passportID : "Not stated",
+    event: ticket.event ? ticket.event.name : "Not stated",
     price: ticket.price,
-    type: ticket.type ? ticket.type : null,
+    type: ticket.type ? ticket.type : "Not stated",
     discount: ticket.discount ? `${ticket.discount}%` : "No",
     number: ticket.number,
     refundable: ticket.refundable ? "Yes" : "No",
-    venueId: ticket.venue.id
+    venue: ticket.venue ? ticket.venue.name : "Not stated"
   },
 });
 
@@ -46,7 +47,7 @@ export const mapPersonToEntity = (person: Person): EntityData => ({
   data: {
     eyeColor: person.eyeColor,
     hairColor: person.hairColor,
-    locationId: person.location?.id,
+    location: person.location ? person.location.name : "Not stated",
     nationality: person.nationality || "Not stated",
     passportID: person.passportID || "No passport ID",
   },
@@ -71,8 +72,8 @@ export const mapEventToEntity = (event: TicketEvent): EntityData => ({
   description: event.description || "No description",
   type: "events",
   data: {
-    date: event.date ? new Date(event.date).toLocaleString(): "Not stated",
-    minAge: event.minAge || "No restrictions",
+    date: event.date ? formattedDate(event.date): "Not stated",
+    minAge: event.minAge > 0 ? event.minAge : "No restrictions",
   },
 });
 

@@ -1,3 +1,7 @@
+input {
+  autocomplete: off;
+}
+
 .input-value-row {
   display: flex;
   align-items: center;   
@@ -13,17 +17,17 @@
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 14px 16px;
   color: #ffffff;
   font-size: 15px;
   font-weight: 400;
   transition: all 0.3s ease;
   outline: none;
-  width: 100%;
+  width: 215px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   height: 20px;
-  max-width: 200px;
+  /* max-width: 200px; */
 }
 
 .glass-input::placeholder {

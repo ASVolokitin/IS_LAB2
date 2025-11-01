@@ -2,7 +2,7 @@ import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { devLog } from "./logger";
 
-const WS_URL = "http://localhost:8081/ws";
+const WS_URL = process.env.REACT_APP_WS_URL;
 
 interface PendingSubscription {
   topic: string;
@@ -16,11 +16,11 @@ class WebSocketService {
 
   connect() {
     if (this.client) return; 
-    const socket = new SockJS(WS_URL);
+    const socket = new SockJS(WS_URL ?? "");
     this.client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
-      debug: (msg) => console.log("[STOMP]", msg),
+      debug: (msg) => devLog.log("[STOMP]", msg),
     });
 
     this.client.onConnect = () => {
@@ -61,11 +61,17 @@ class WebSocketService {
     if (!this.client) throw new Error("WebSocket client not initialized");
 
     if (this.connected && this.client.active) {
-      return this.client.subscribe(topic, callback);
+      devLog.log(`[WS] Subscribing to topic: ${topic}`);
+      return this.client.subscribe(topic, (msg) => {
+        devLog.log(`[WS] Received message on ${topic}, body length: ${msg.body?.length || 0}`);
+        callback(msg);
+      });
     } else {
+      devLog.log(`[WS] Adding pending subscription for topic: ${topic}`);
       this.pendingSubscriptions.push({ topic, callback });
       return {
         unsubscribe: () => {
+          devLog.log(`[WS] Unsubscribing pending subscription for topic: ${topic}`);
           this.pendingSubscriptions = this.pendingSubscriptions.filter(
             (sub) => sub.topic !== topic || sub.callback !== callback
           );

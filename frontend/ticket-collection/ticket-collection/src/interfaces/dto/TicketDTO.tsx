@@ -5,10 +5,10 @@ export interface TicketDTO {
   coordinatesId: number | null;
   personId: number | null;
   eventId: number | null;
-  price: string;
-  type: TicketType | undefined;
-  discount: string;
-  number: string;
-  refundable: string;
+  price: number;
+  type: TicketType | null;
+  discount: number | null ;
+  number: number ;
+  refundable: boolean;
   venueId: number | null;
 }

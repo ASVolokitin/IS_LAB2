@@ -1,7 +1,7 @@
 import { Ticket } from "../interfaces/Ticket";
 import { formattedDate } from "./format";
 
-export function getNestedValue(obj: any, path: string) {
+function getNestedValue(obj: any, path: string) {
   return path
     .split(".")
     .reduce(
@@ -19,3 +19,4 @@ export function renderCell(row: Ticket, field: string) {
   
   return value ?? "";
 }
+

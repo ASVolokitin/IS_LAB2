@@ -7,17 +7,17 @@ export const filterTickets = (tickets: Ticket[], filters: Filter) => {
 
     const filtered = tickets.filter((ticket) => {
       const ticketNameMatch =
-        filters.ticketNameFilter === "" ||
-        ticket.name === filters.ticketNameFilter;
+        filters.ticketName === "" ||
+        ticket.name === filters.ticketName;
       const personPassportIDMatch =
-        filters.personPassportIDFilter === "" ||
-        ticket.person?.passportID === filters.personPassportIDFilter;
+        filters.personPassportID === "" ||
+        ticket.person?.passportID === filters.personPassportID;
       const eventDescriptionMatch =
-        filters.eventDescriptionFilter === "" ||
-        ticket.event?.description === filters.eventDescriptionFilter;
+        filters.eventDescription === "" ||
+        ticket.event?.description === filters.eventDescription;
       const venueNameDescriptionMatch =
-        filters.venueNameDescription === "" ||
-        ticket.venue.name === filters.venueNameDescription;
+        filters.venueName === "" ||
+        ticket.venue.name === filters.venueName;
       const personLocationNameMatch =
         filters.personLocationName === "" ||
         ticket.person?.location?.name === filters.personLocationName;

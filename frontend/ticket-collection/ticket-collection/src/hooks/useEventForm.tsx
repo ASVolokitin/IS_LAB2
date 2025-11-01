@@ -1,3 +1,5 @@
+// DEPRECATED
+
 import { useState, useEffect } from "react";
 import { TicketEvent } from "../interfaces/TicketEvent";
 import { validateEventField } from "../services/validator/eventValidator";
@@ -64,8 +66,8 @@ export const useEventForm = (initialData?: TicketEvent) => {
     const newErrors = {
       name: validateEventField("name", formData.name),
       description: validateEventField("description", formData.description),
-      minAge: validateEventField("minAge", formData.minAge),
-      date: validateEventField("date", formData.date),
+      minAge: validateEventField("minAge", formData.minAge ? formData.minAge : ""),
+      date: validateEventField("date", formData.date ? formData.date : ""),
     };
 
     setErrors(newErrors);
@@ -77,7 +79,7 @@ export const useEventForm = (initialData?: TicketEvent) => {
       name: formData.name.trim(),
       description: formData.description.trim() || null,
       minAge: formData.minAge ? parseInt(formData.minAge) : null,
-      date: new Date(formData.date),
+      date: formData.date ? new Date(formData.date) : null,
     };
   };
 

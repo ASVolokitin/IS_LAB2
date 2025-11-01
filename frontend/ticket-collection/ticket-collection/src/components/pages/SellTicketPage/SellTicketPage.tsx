@@ -37,12 +37,12 @@ export const SellTicketPage = () => {
 
   useEffect(() => {
     getAllTickets()
-    .then((res) => setTickets(res.data))
-    .catch((err) => setServerError(err.response.data.message))
+      .then((res) => setTickets(res.data))
+      .catch((err) => setServerError(err.response.data.message))
 
     getPersons()
-    .then((res) => setBuyers(res.data))
-    .catch((err) => setServerError(err.response.data.message))
+      .then((res) => setBuyers(res.data))
+      .catch((err) => setServerError(err.response.data.message))
   }, [])
 
   return (
@@ -57,25 +57,27 @@ export const SellTicketPage = () => {
             <form onSubmit={handleSubmit} className="ticket-form">
               <div className="form-section">
 
-                <div className="object-field">
+                <div className="form-group">
                   <label>Ticket ID *</label>
                   <div className="object-field-controls">
-                    <select
-                      className={`glass-select ${
-                        errors.ticketId ? "input-error" : ""
-                      }`}
-                      value={formData.ticketId || ""}
-                      onChange={(e) =>
-                        handleChange("ticketId", e.target.value)
-                      }
-                    >
-                      <option value="">-</option>
-                      {tickets?.map((tickets: Ticket) => (
-                        <option key={tickets.id} value={tickets.id}>
-                          {tickets.id}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="input-container">
+                      <select
+                        className={`glass-select ${errors.ticketId ? "input-error" : ""
+                          }`}
+                        value={formData.ticketId || ""}
+                        onChange={(e) =>
+                          handleChange("ticketId", e.target.value)
+                        }
+                      >
+                        <option value="">-</option>
+                        {tickets?.map((tickets: Ticket) => (
+                          <option key={tickets.id} value={tickets.id}>
+                            {tickets.id}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                   </div>
                   {errors.ticketId && (
                     <span className="error-message">
@@ -84,26 +86,28 @@ export const SellTicketPage = () => {
                   )}
                 </div>
 
-                <div className="object-field">
+                <div className="form-group">
                   <label>Buyer passport *</label>
                   <div className="object-field-controls">
-                    <select
-                      className={`glass-select ${
-                        errors.buyerId ? "input-error" : ""
-                      }`}
-                      value={formData.buyerId || ""}
-                      onChange={(e) =>
-                        handleChange("buyerId", e.target.value)
-                      }
-                    >
-                      <option value="">-</option>
-                      {buyers?.map((buyers: Person) => (
-                        <option key={buyers.id} value={buyers.id}>
-                          {buyers.passportID}
-                        </option>
-                      ))}
+                    <div className="input-container">
+                      <select
+                        className={`glass-select ${errors.buyerId ? "input-error" : ""
+                          }`}
+                        value={formData.buyerId || ""}
+                        onChange={(e) =>
+                          handleChange("buyerId", e.target.value)
+                        }
+                      >
+                        <option value="">-</option>
+                        {buyers?.map((buyers: Person) => (
+                          <option key={buyers.id} value={buyers.id}>
+                            {buyers.passportID}
+                          </option>
+                        ))}
 
-                    </select>
+                      </select>
+                    </div>
+
                   </div>
                   {errors.buyerId && (
                     <span className="error-message">
@@ -114,23 +118,26 @@ export const SellTicketPage = () => {
 
                 <div className="form-group">
                   <label htmlFor="sell-ticket-price">Price *</label>
-                  <input
-                    id="sell-ticket-price"
-                    type="number"
-                    min={0}
-                    step={1}
-                    className={`glass-input ${
-                      errors.ticketId ? "input-error" : ""
-                    }`}
-                    onChange={(e) => handleChange("price", e.target.value)}
-                    placeholder="Enter price"
-                  />
-                  {errors.price && (
-                    <span className="error-message">{errors.price}</span>
-                  )}
+                  <div className="input-container">
+                    <input
+                      autoComplete="off"
+                      id="sell-ticket-price"
+                      type="number"
+                      min={0}
+                      step={1}
+                      className={`glass-input ${errors.ticketId ? "input-error" : ""
+                        }`}
+                      onChange={(e) => handleChange("price", e.target.value)}
+                      placeholder="Enter price"
+                    />
+                    {errors.price && (
+                      <span className="error-message">{errors.price}</span>
+                    )}
+                  </div>
+
                 </div>
 
-        
+
               </div>
 
               <div className="form-actions">
@@ -165,7 +172,7 @@ export const SellTicketPage = () => {
             message={serverStatus}
             type="success"
             isVisible={true}
-            onClose={() => setServerStatus(null)}
+            onClose={() => { setServerStatus(null) }}
           />
         )}
       </div>

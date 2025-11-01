@@ -1,46 +1,33 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./CreateTicketPage.css";
-import "../../CreatePage/CreatePage.css"
 import '../../../elements/Select/Select.css'
 import NavBar from "../../../elements/NavBar/NavBar";
 import { createTicket, getCoordinates, getEvents, getPersons, getVenues } from "../../../../services/api";
-import { Coordinates } from "../../../../interfaces/Сoordinates";
-import { Person } from "../../../../interfaces/Person";
-import { Venue } from "../../../../interfaces/Venue";
-import { TicketEvent } from "../../../../interfaces/TicketEvent";
 import { TicketDTO } from "../../../../interfaces/dto/TicketDTO";
 
 import '../../../elements/Input/Input.css'
-import { TICKET_TYPES } from "../../../../types/TicketType";
-import { validateTicketField } from "../../../../services/validator/ticketValidator";
+import { Notification } from "../../../elements/Notification/Notification";
+import { TicketForm } from "../../../elements/Form/TicketForm";
+import { devLog } from "../../../../services/logger";
+import { Person } from "../../../../interfaces/Person";
+import { Coordinates } from "../../../../interfaces/Сoordinates";
+import { TicketEvent } from "../../../../interfaces/TicketEvent";
+import { Venue } from "../../../../interfaces/Venue";
 
 
 export const CreateTicketPage = () => {
 
-  const [coordinates, setCoordinates] = useState<Coordinates[]>();
-  const [persons, setPersons] = useState<Person[]>();
-  const [events, setEvents] = useState<TicketEvent[]>();
-  const [venues, setVenues] = useState<Venue[]>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [coordinates, setCoordinates] = useState<{ id: number; name: string }[]>([]);
+  const [persons, setPersons] = useState<{ id: number; name: string }[]>([]);
+  const [events, setEvents] = useState<{ id: number; name: string }[]>([]);
+  const [venues, setVenues] = useState<{ id: number; name: string }[]>([]);
 
+  const [serverError, setServerError] = useState<string | null>("");
+  const [serverStatus, setServerStatus] = useState<string | null>("");
 
-  const [serverStatus, setServerStatus] = useState<string | null>(null);
-
-
-  const [formData, setFormData] = useState<TicketDTO>({
-    name: "",
-    coordinatesId: null,
-    personId: null,
-    eventId: null,
-    price: "",
-    type: undefined,
-    discount: "",
-    number: "",
-    refundable: "true",
-    venueId: null,
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadExistingObjects();
@@ -49,20 +36,46 @@ export const CreateTicketPage = () => {
   const loadExistingObjects = async () => {
 
     getCoordinates()
-      .then((res) => setCoordinates(res.data))
+      .then((res) => {
+        const list = res.data.map((c: Coordinates) => ({
+          id: c.id,
+          name: `(${c.x}; ${c.y})`,
+        }));
+        setCoordinates(list);
+      })
+
       .catch((err) => setServerStatus(err.message));
 
     getPersons()
-      .then((res) => setPersons(res.data))
+      .then((res) => {
+        const list = res.data.map((c: Person) => ({
+          id: c.id,
+          name: c.passportID,
+        }));
+        setPersons(list);
+      })
       .catch((err) => setServerStatus(err.message));
 
     getEvents()
-      .then((res) => setEvents(res.data))
+      .then((res) => {
+        const list = res.data.map((c: TicketEvent) => ({
+          id: c.id,
+          name: c.name,
+        }));
+        setEvents(list);
+      })
       .catch((err) => setServerStatus(err.message));
 
     getVenues()
-      .then((res) => setVenues(res.data))
-      .catch((err) => setServerStatus(err.message));
+      .then((res) => {
+        const list = res.data.map((c: Venue) => ({
+          id: c.id,
+          name: c.name,
+        }));
+        setVenues(list);
+        setIsLoading(false);
+      })
+      .catch((err) => { setServerStatus(err.message); setIsLoading(false); });
 
 
   };
@@ -80,55 +93,17 @@ export const CreateTicketPage = () => {
     "venueId",
   ];
 
-  const handleChange = (field: keyof TicketDTO, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    const error = validateTicketField(field, value);
-    setErrors((prev) => ({ ...prev, [field]: error }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newErrors: Record<string, string> = {};
-    formKeys.forEach((key) => {
-      const error = validateTicketField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    console.log("Submit data:", formData);
-    
-    createTicket(formData)
-      .then((res) => setServerStatus(`Successfully created ticket ${formData.name} with id ${res.data.entityId}`))
+  const handleSubmit = (dto: TicketDTO) => {
+    createTicket(dto)
+      .then((res) => { setServerStatus(res.data.message); })
       .catch((err) => {
-        if (err.response) setServerStatus(`ERROR: ${err.response.data.message}` || "Server error");
+        if (err.response) {
+          setServerError(err.response.data.message)
+        }
         else if (err.request) setServerStatus("No response from server");
         else setServerStatus("Unable to send request");
       });
-  };
-
-  const isFormValid = () => {
-    const requiredFields: (keyof TicketDTO)[] = [
-      "name",
-      "coordinatesId",
-      "price",
-      "number",
-      "refundable",
-      "venueId",
-    ];
-
-    return (
-      requiredFields.some((field) => {
-        const value = formData[field];
-        return value === null || value === "" || value === undefined;
-      }) || Object.values(errors).some((error) => error !== "")
-    );
-  };
+  }
 
   return (
     <>
@@ -137,237 +112,38 @@ export const CreateTicketPage = () => {
         <div className="full-form-container">
           <h1>Create new ticket</h1>
 
-          <form onSubmit={handleSubmit} className="ticket-form">
-            <div className="form-section">
-              <h2>General information</h2>
-
-              <div className="form-group">
-                <label htmlFor="name">Name *</label>
-                <input
-                  id="name"
-                  type="text"
-                  maxLength={255}
-                  className={`glass-input ${errors.name ? "input-error" : ""}`}
-                  value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  placeholder="Enter ticket name"
-                />
-                {errors.name && (
-                  <span className="error-message">{errors.name}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="price">Price *</label>
-                <input
-                  id="price"
-                  type="number"
-                  step="1"
-                  className={`glass-input ${errors.price ? "input-error" : ""}`}
-                  value={formData.price}
-                  onChange={(e) => handleChange("price", e.target.value)}
-                  placeholder="Enter ticket price"
-                />
-                {errors.price && (
-                  <span className="error-message">{errors.price}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="number">Number *</label>
-                <input
-                  id="number"
-                  type="number"
-                  className={`glass-input ${
-                    errors.number ? "input-error" : ""
-                  }`}
-                  value={formData.number}
-                  onChange={(e) => handleChange("number", e.target.value)}
-                  placeholder="Enter a number"
-                />
-                {errors.number && (
-                  <span className="error-message">{errors.number}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="discount">Discount</label>
-                <input
-                  id="discount"
-                  type="number"
-                  min="0"
-                  max="100"
-                  className={`glass-input ${
-                    errors.discount ? "input-error" : ""
-                  }`}
-                  value={formData.discount}
-                  onChange={(e) => handleChange("discount", e.target.value)}
-                  placeholder="Enter discount (0-100)"
-                />
-                {errors.discount && (
-                  <span className="error-message">{errors.discount}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="refundable">Refundable *</label>
-                <select
-                  id="refundable"
-                  className="glass-select"
-                  value={formData.refundable}
-                  onChange={(e) => handleChange("refundable", e.target.value)}
-                >
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="type">Ticket type</label>
-                <select
-                  id="type"
-                  className="glass-select"
-                  value={formData.type ? formData.type : "-"}
-                  onChange={(e) => handleChange("type", e.target.value === "-" ? "" : e.target.value)}
-                >
-                  {Object.entries(TICKET_TYPES).map(([key, value]) => (
-                    <option key={key} value={value ? value : "-"}>{key !== "NOT_STATED" ? key : "-"}</option>
-                  ))}
-                </select>
-              </div>
+          {isLoading ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              Loading data...
             </div>
+          ) : (
+            <TicketForm
+              onSubmit={handleSubmit}
+              coordinatesList={coordinates}
+              personList={persons}
+              eventList={events}
+              venueList={venues}
+              onCancel={() => navigate(-1)}
+            />
+          )}
 
-            <div className="form-section">
-              <h2>Connected objects</h2>
-
-              <div className="object-field">
-                <label>Coordinates *</label>
-                <div className="object-field-controls">
-                  <select
-                    className={`glass-select ${
-                      errors.coordinates ? "input-error" : ""
-                    }`}
-                    value={formData.coordinatesId || ""}
-                    onChange={(e) =>
-                      handleChange("coordinatesId", e.target.value)
-                    }
-                  >
-                    <option value="">-</option>
-                    {coordinates?.map((coordinates: Coordinates) => (
-                      <option key={coordinates.id} value={coordinates.id}>
-                        {`(${coordinates.x}; ${coordinates.y})`}
-                      </option>
-                    ))}
-                  </select>
-                  <Link to="/coordinates/create">
-                    <button type="button" className="outline-button">
-                      Create new
-                    </button>
-                  </Link>
-                </div>
-                {errors.coordinates && (
-                  <span className="error-message">{errors.coordinates}</span>
-                )}
-              </div>
-
-              <div className="object-field">
-                <label>Person (passport ID)</label>
-                <div className="object-field-controls">
-                  <select
-                    className="glass-select"
-                    value={formData.personId || ""}
-                    onChange={(e) => handleChange("personId", e.target.value)}
-                  >
-                    <option value="">-</option>
-                    {persons?.map((person: Person) => (
-                      <option key={person.id} value={person.id}>
-                        {person.passportID}
-                      </option>
-                    ))}
-                  </select>
-                  <Link to="/persons/create">
-                    <button type="button" className="outline-button">
-                      Create new
-                    </button>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="object-field">
-                <label>Event</label>
-                <div className="object-field-controls">
-                  <select
-                    className="glass-select"
-                    value={formData.eventId || ""}
-                    onChange={(e) => handleChange("eventId", e.target.value)}
-                  >
-                    <option value="">-</option>
-                    {events?.map((ticketEvent: TicketEvent) => (
-                      <option key={ticketEvent.id} value={ticketEvent.id}>
-                        {`${ticketEvent.name}`}
-                      </option>
-                    ))}
-                  </select>
-                  <Link to="/events/create">
-                    <button type="button" className="outline-button">
-                      Create new
-                    </button>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="object-field">
-                <label>Venue *</label>
-                <div className="object-field-controls">
-                  <select
-                    className={`glass-select ${
-                      errors.venue ? "input-error" : ""
-                    }`}
-                    value={formData.venueId || ""}
-                    onChange={(e) => handleChange("venueId", e.target.value)}
-                  >
-                    <option value="">-</option>
-                    {venues?.map((venue: Venue) => (
-                      <option key={venue.id} value={venue.id}>
-                        {`${venue.name}`}
-                      </option>
-                    ))}
-                  </select>
-                  <Link to="/venues/create">
-                    <button type="button" className="outline-button">
-                      Create new
-                    </button>
-                  </Link>
-                </div>
-                {errors.venue && (
-                  <span className="error-message">{errors.venue}</span>
-                )}
-              </div>
-            </div>
-            <div className="server-status-container">
-                <p>{serverStatus}</p>
-            </div>
-            <div className="form-actions">
-              <Link to="/">
-                <button
-                  type="button"
-                  className="outline-button"
-                >
-                  Cancel
-                </button>
-              </Link>
-
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={isFormValid()}
-              >
-                Create ticket
-              </button>
-            
-            </div>
-          </form>
         </div>
+        {serverError && (
+          <Notification
+            message={serverError}
+            type="error"
+            isVisible={true}
+            onClose={() => setServerError(null)}
+          />
+        )}
+        {serverStatus && (
+          <Notification
+            message={serverStatus}
+            type="success"
+            isVisible={true}
+            onClose={() => setServerStatus(null)}
+          />
+        )}
       </div>
     </>
   );

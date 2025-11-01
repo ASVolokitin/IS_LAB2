@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TicketFormData } from "../interfaces/formData/TicketFormData";
 import { validateTicketField } from "../services/validator/ticketValidator";
+import { devLog } from "../services/logger";
 
 export const useTicketForm = (initialData?: TicketFormData) => {
   const [formData, setFormData] = useState<TicketFormData>({
@@ -12,7 +13,7 @@ export const useTicketForm = (initialData?: TicketFormData) => {
     type: null,
     discount: null,
     number: "",
-    refundable: "No",
+    refundable: false,
     venueId: "",
   });
 
@@ -30,34 +31,7 @@ export const useTicketForm = (initialData?: TicketFormData) => {
   });
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: String(initialData.name || ""),
-        coordinatesId: initialData.coordinatesId || "",
-        personId: initialData.personId === "Not stated" ? null : initialData.personId,
-        eventId: initialData.eventId === "Not stated" ? null : initialData.eventId,
-        price: String(initialData.price || ""),
-        type: initialData.type === "Not stated" ? null : initialData.type,
-        discount: String(initialData.discount),
-        number: String(initialData.number || ""),
-        refundable: initialData.refundable,
-        venueId: initialData.venueId,
-      });
-
-    } else {
-      setFormData({
-        name: "",
-        coordinatesId: "",
-        personId: null,
-        eventId: null,
-        price: "",
-        type: null,
-        discount: "",
-        number: "",
-        refundable: "No",
-        venueId: "",
-      });
-    }
+    if (initialData) setFormData(initialData)
   }, [initialData]);
 
   const handleChange = (field: keyof TicketFormData, value: any) => {
@@ -101,9 +75,9 @@ export const useTicketForm = (initialData?: TicketFormData) => {
       eventId: formData.eventId ? formData.eventId : null,
       price: parseInt(formData.price),
       type: formData.type !== "-" ? formData.type : null,
-      discount: Number(formData.discount),
+      discount: (formData.discount && formData.discount !== "") ? Number(formData.discount) : null,
       number: Number(formData.number),
-      refundable: formData.refundable === "Yes",
+      refundable: formData.refundable,
       venueId: formData.venueId,
     };
   };

@@ -73,9 +73,10 @@
   color: white;
   text-decoration: none;
   border-radius: 25px;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   font-weight: 500;
   overflow: hidden;
+  transform: translateY(0);
 }
 
 .navigation__link::before {
@@ -95,8 +96,20 @@
 
 .navigation__link:hover {
   background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.navigation__link:hover::after {
+  transform: translateY(-2px);
+}
+
+.navigation__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
 }
 
 .navigation__link--active {

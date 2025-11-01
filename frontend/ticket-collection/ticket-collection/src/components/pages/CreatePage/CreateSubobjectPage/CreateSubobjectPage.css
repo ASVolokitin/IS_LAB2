@@ -1,4 +1,4 @@
-.create-subobject-page {
+.create-object-page {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -11,6 +11,7 @@
     flex-direction: column;
     justify-content: center;
     height: 100vh;
+    min-width: 550px;
 }
 input[type="number"] {
   -moz-appearance: textfield;

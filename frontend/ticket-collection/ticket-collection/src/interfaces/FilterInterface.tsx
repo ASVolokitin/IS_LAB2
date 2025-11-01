@@ -1,8 +1,8 @@
 export interface Filter {
-    ticketNameFilter: string,
-    personPassportIDFilter: string,
-    eventDescriptionFilter: string,
-    venueNameDescription: string,
+    ticketName: string,
+    personPassportID: string,
+    eventDescription: string,
+    venueName: string,
     personLocationName: string,
 }
 

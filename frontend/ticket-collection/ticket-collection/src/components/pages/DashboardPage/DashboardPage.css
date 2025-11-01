@@ -68,7 +68,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: auto;
+  margin-top: 40px;
 }
 
 .create-button:hover {
@@ -123,12 +123,13 @@
 
 .card-header {
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
 }
 
 .card-title {
+   max-width: 200px; 
   color: #ffffff;
   font-size: 18px;
   font-weight: 600;

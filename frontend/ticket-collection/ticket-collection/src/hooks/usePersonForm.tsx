@@ -1,3 +1,5 @@
+// DEPRECATED
+
 import { useEffect, useState } from "react";
 import { PersonFormData } from "../interfaces/formData/PersonFormData";
 import { PersonDTO } from "../interfaces/dto/PersonDTO";
@@ -22,7 +24,6 @@ export const usePersonForm = (initialData?: PersonFormData) => {
 
   useEffect(() => {
     if (initialData) {
-      console.log("ininital", initialData);
 
       setFormData({
         eyeColor: String(initialData.eyeColor),
@@ -32,14 +33,6 @@ export const usePersonForm = (initialData?: PersonFormData) => {
         nationality: String(initialData.nationality) === "Not stated" ? null : initialData.nationality,
       });
       
-    } else {
-      setFormData({
-        eyeColor: "GREEN",
-        hairColor: "WHITE",
-        locationId: null,
-        passportID: null,
-        nationality: null,
-      });
     }
   }, [initialData]);
 
@@ -53,7 +46,6 @@ export const usePersonForm = (initialData?: PersonFormData) => {
 
     const error = validatePersonField(field, safeValue);
     setErrors((prev) => ({ ...prev, [field]: error }));
-    console.log("field validating error", errors);
   };
 
   const validateForm = (): boolean => {
@@ -66,13 +58,12 @@ export const usePersonForm = (initialData?: PersonFormData) => {
     };
 
     setErrors(newErrors);
-    console.log("form validating errors", newErrors);
     return !Object.values(newErrors).some((error) => error !== "");
   };
 
   const getSubmitData = () => ({
     eyeColor: formData.eyeColor.trim(),
-    hairColor: formData.eyeColor.trim(),
+    hairColor: formData.hairColor.trim(),
     locationId: formData.locationId ? formData.locationId : null,
     passportID: formData.passportID ? formData.passportID : null,
     nationality: formData.nationality ? formData.nationality : null,

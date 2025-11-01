@@ -1,3 +1,5 @@
+// DEPRECATED
+
 import { useState, useEffect } from 'react';
 import { Venue } from '../interfaces/Venue';
 import { VenueFormData } from '../interfaces/formData/VenueFormData';
@@ -18,9 +20,8 @@ export const useVenueForm = (initialData?: Venue) => {
 
   useEffect(() => {
     if (initialData) {
-            console.log(initialData);
 
-      
+
       setFormData({
         name: String(initialData.name || ''),
         capacity: String(initialData.capacity || ''),
@@ -29,7 +30,7 @@ export const useVenueForm = (initialData?: Venue) => {
     } else {
       setFormData({
         name: '',
-        capacity: '', 
+        capacity: '',
         type: null
       });
     }
@@ -37,12 +38,12 @@ export const useVenueForm = (initialData?: Venue) => {
 
   const handleChange = (field: keyof VenueFormData, value: any) => {
     const safeValue = value === undefined ? '' : value;
-    
-    setFormData(prev => ({ 
-      ...prev, 
-      [field]: safeValue 
+
+    setFormData(prev => ({
+      ...prev,
+      [field]: safeValue
     }));
-    
+
     const error = validateVenueField(field, safeValue);
     setErrors(prev => ({ ...prev, [field]: error }));
   };
@@ -70,7 +71,7 @@ export const useVenueForm = (initialData?: Venue) => {
     handleChange,
     validateForm,
     getSubmitData,
-    isFormValid: !formData.name || !formData.capacity || 
-                Object.values(errors).some(error => error !== '')
+    isFormValid: !formData.name || !formData.capacity ||
+      Object.values(errors).some(error => error !== '')
   };
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Profiler, ProfilerOnRenderCallback } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
@@ -15,9 +15,15 @@ import { CreateVenuePage } from "./components/pages/CreatePage/CreateSubobjectPa
 import { EntitiesDashboard } from "./components/pages/DashboardPage/DashboardPage";
 import { CalculateGroupsPage } from "./components/pages/CalculateGroupsPage/CalculateGroupsPage";
 import { SellTicketPage } from "./components/pages/SellTicketPage/SellTicketPage";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./config/react-query";
 import MainPage from "./components/pages/MainPage/MainPage";
+import { webSocketService } from "./services/webSocketService";
+
+webSocketService.connect()
+
+window.addEventListener("beforeunload", () => {
+  webSocketService.disconnect();
+});
+
 
 
 const router = createBrowserRouter([
@@ -39,11 +45,9 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
+  // <React.StrictMode>
       <RouterProvider router={router} />
-    </QueryClientProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 reportWebVitals();
