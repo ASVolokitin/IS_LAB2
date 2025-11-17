@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { VenueDTO } from "../../../interfaces/dto/VenueDTO";
@@ -42,6 +42,9 @@ export const venueValidationSchema = Yup.object({
 
 export const VenueForm = ({ initialValues, onSubmit, onCancel }: VenueFormProps) => {
 
+    const marker = "custom: render-venue-form";
+    const end_marker = "custom: end-render-venue-form";
+
     useNavigate();
 
     const formik = useFormik<VenueFormData>({
@@ -64,6 +67,12 @@ export const VenueForm = ({ initialValues, onSubmit, onCancel }: VenueFormProps)
             onSubmit(dto);
         },
     });
+
+    if (!onSubmit) return null;
+
+    performance.mark(marker);
+    performance.mark(end_marker);
+    performance.measure('custom: ticket venue measure', marker, end_marker);
 
     return (
         <form onSubmit={formik.handleSubmit} className="venue-form">

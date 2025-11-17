@@ -55,7 +55,9 @@ export const eventValidationSchema = Yup.object({
 
 export const EventForm = ({ initialValues, onSubmit, onCancel }: EventFormProps) => {
 
-    devLog.log("data to map: ", initialValues);
+    const marker = "custom: render-event-form";
+    const end_marker = "custom: end-render-event-form";
+    performance.mark(marker);
 
     const formik = useFormik<TicketEventDTO>({
         initialValues: initialValues
@@ -85,6 +87,10 @@ export const EventForm = ({ initialValues, onSubmit, onCancel }: EventFormProps)
             onSubmit(dto);
         },
     });
+
+    performance.mark(marker);
+    performance.mark(end_marker);
+    performance.measure('custom: event form measure', marker, end_marker);
 
     return (
         <form onSubmit={formik.handleSubmit} className="event-form">

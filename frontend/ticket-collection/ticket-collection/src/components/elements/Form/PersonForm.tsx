@@ -36,6 +36,9 @@ export const personValidationSchema = Yup.object({
 
 export const PersonForm = ({ initialValues, locationList, onSubmit, onCancel }: PersonFormProps) => {
 
+    const marker = "custom: render-person-form";
+    const end_marker = "custom: end-render-person-form";
+
     const formik = useFormik({
         initialValues: initialValues ?? {
             eyeColor: "",
@@ -65,6 +68,10 @@ export const PersonForm = ({ initialValues, locationList, onSubmit, onCancel }: 
 
         },
     });
+
+    performance.mark(marker);
+    performance.mark(end_marker);
+    performance.measure('custom: person form measure', marker, end_marker);
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -124,7 +131,7 @@ export const PersonForm = ({ initialValues, locationList, onSubmit, onCancel }: 
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             className="glass-select"
-                            style={{width:"150px"}}
+                            style={{ width: "150px" }}
                         >
                             <option value={""}>Not stated</option>
                             {locationList?.map((loc) => (

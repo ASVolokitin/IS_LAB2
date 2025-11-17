@@ -8,7 +8,7 @@ import "../Modal/Dialog.css"
 import { Link } from "react-router-dom";
 import { TICKET_TYPES } from "../../../types/TicketType";
 import { FieldType, normalize } from "../../../services/normalize";
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 
 interface TicketFormProps {
     initialValues?: TicketDTO;
@@ -75,6 +75,10 @@ export const TicketForm = ({
     venueList,
 }: TicketFormProps) => {
 
+    const marker = "custom: render-ticket-form";
+    const end_marker = "custom: end-render-ticket-form";
+    performance.mark(marker);
+
     const formik = useFormik<TicketDTO>({
         initialValues: initialValues ?? {
             name: "",
@@ -104,6 +108,7 @@ export const TicketForm = ({
             onSubmit(dto);
         },
     });
+
     const renderSelect = useMemo(() => (
         name: keyof TicketDTO,
         entityName: string,
@@ -137,6 +142,8 @@ export const TicketForm = ({
         </>
     ), [formik.values, formik.touched, formik.errors]);
 
+    performance.mark(end_marker);
+    performance.measure('custom: ticket form measure', marker, end_marker);
 
     return (
         <form onSubmit={formik.handleSubmit} className="ticket-form">

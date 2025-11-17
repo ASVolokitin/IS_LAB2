@@ -55,6 +55,10 @@ export const locationValidationSchema = Yup.object({
 
 
 export const LocationForm = ({ initialValues, onSubmit, onCancel }: LocationFormProps) => {
+
+    const marker = "custom: render-location-form";
+    const end_marker = "custom: end-render-location-form";
+
     const navigate = useNavigate();
 
     const formik = useFormik<LocationDTO>({
@@ -79,6 +83,10 @@ export const LocationForm = ({ initialValues, onSubmit, onCancel }: LocationForm
             onSubmit(dto);
         },
     });
+
+    performance.mark(marker);
+    performance.mark(end_marker);
+    performance.measure('custom: location form measure', marker, end_marker);
 
     return (
         <form onSubmit={formik.handleSubmit} className="location-form">

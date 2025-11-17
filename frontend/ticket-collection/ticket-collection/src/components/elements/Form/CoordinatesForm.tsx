@@ -45,6 +45,9 @@ const validationSchema = Yup.object({
 
 export const CoordinatesForm = ({ initialValues, onSubmit, onCancel }: CoordinatesFormProps) => {
 
+  const marker = "custom: render-coordinates-form";
+  const end_marker = "custom: end-render-coordinates-form";
+
   const formik = useFormik({
     initialValues: initialValues ?? { x: "", y: "" },
     validationSchema,
@@ -62,7 +65,9 @@ export const CoordinatesForm = ({ initialValues, onSubmit, onCancel }: Coordinat
     },
   });
 
-  devLog.log("opla");
+    performance.mark(marker);
+    performance.mark(end_marker);
+    performance.measure('custom: coordinates form measure', marker, end_marker);
 
   return (
     <form onSubmit={formik.handleSubmit} className="coordinates-form">
