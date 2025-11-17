@@ -9,6 +9,7 @@ import com.ticketis.app.model.enums.WebSocketEventType;
 import com.ticketis.app.repository.CoordinatesRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +21,7 @@ public class CoordinatesService {
     private final WebSocketEventController webSocketController;
     
     public List<Coordinates> getALlCoordinates() {
-        return coordinatesRepository.findAll();
+        return coordinatesRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Coordinates getCoordinatesById(Long id) {

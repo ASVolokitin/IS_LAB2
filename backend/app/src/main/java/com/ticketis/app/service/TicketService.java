@@ -19,7 +19,6 @@ import com.ticketis.app.repository.PersonRepository;
 import com.ticketis.app.repository.TicketRepository;
 import com.ticketis.app.repository.VenueRepository;
 import com.ticketis.app.specification.GenericSpecification;
-
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +26,14 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-    public class TicketService {
+public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final CoordinatesRepository coordinatesRepository;
@@ -46,23 +46,29 @@ import org.springframework.transaction.annotation.Transactional;
     private final EntityManager em;
 
     public List<Ticket> getAllTickets() {
-        return ticketRepository.findAll();
+        return ticketRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
-    public Page<Ticket> getTicketsPage(Pageable pageable) {
+    public Page<Ticket> getTicketsPage(Map<String, String> filters, Pageable pageable) {
 
-        // Specification<Ticket> spec = null;
+        Specification<Ticket> spec = null;
 
-        // for (var entry : filters.entrySet()) {
-        //     spec = spec.and(GenericSpecification.stringContains(entry.getKey(), entry.getValue()));
-        // }
+        for (var entry : filters.entrySet()) {
+            Specification<Ticket> filterSpec =
+            GenericSpecification.stringContains(entry.getKey(), entry.getValue());
+            if (filterSpec != null) {
+                spec = (spec == null) ? filterSpec : spec.and(filterSpec);
+            }
+        }
 
-        return ticketRepository.findAll(pageable);
+        return (spec == null)
+                ? ticketRepository.findAll(pageable)
+                : ticketRepository.findAll(spec, pageable);
     }
 
     public Ticket getTicketById(Long id) {
         return ticketRepository.findById(id)
-        .orElseThrow(() -> new TicketNotFoundException(id));
+                .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
     public void deleteTicketById(Long id) {
@@ -75,24 +81,26 @@ import org.springframework.transaction.annotation.Transactional;
 
     public Long createTicket(TicketRequest request) {
         Ticket ticket = new Ticket(
-            request.name(),
-            coordinatesRepository.findById(request.coordinatesId())
-            .orElseThrow(() -> new CoordinatesNotFoundException(request.coordinatesId())),
-            (request.personId() == null) ? null : personRepository
-            .findById(request.personId())
+                request.name(),
+                coordinatesRepository.findById(request.coordinatesId())
+                        .orElseThrow(()
+                         -> new CoordinatesNotFoundException(request.coordinatesId())),
+                (request.personId() == null) ? null
+                        : personRepository
+                                .findById(request.personId())
 
-            .orElseThrow(() -> new PersonNotFoundException(request.personId())),
-            (request.eventId() == null) ? null : eventRepository
-            .findById(request.eventId())
-            .orElseThrow(() -> new EventNotFoundException(request.eventId())),
-            request.price(),
-            request.type(),
-            request.discount(),
-            request.number(),
-            request.refundable(),
-            venueRepository.findById(request.venueId())
-            .orElseThrow(() -> new VenueNotFoundException(request.venueId()))
-        );
+                                .orElseThrow(() -> new PersonNotFoundException(request.personId())),
+                (request.eventId() == null) ? null
+                        : eventRepository
+                                .findById(request.eventId())
+                                .orElseThrow(() -> new EventNotFoundException(request.eventId())),
+                request.price(),
+                request.type(),
+                request.discount(),
+                request.number(),
+                request.refundable(),
+                venueRepository.findById(request.venueId())
+                        .orElseThrow(() -> new VenueNotFoundException(request.venueId())));
 
         ticket = ticketRepository.save(ticket);
 
@@ -108,22 +116,22 @@ import org.springframework.transaction.annotation.Transactional;
 
         ticket.setName(request.name());
         ticket.setCoordinates(coordinatesRepository.findById(request.coordinatesId())
-        .orElseThrow(() -> new CoordinatesNotFoundException(request.coordinatesId())));
+                .orElseThrow(() -> new CoordinatesNotFoundException(request.coordinatesId())));
 
-        ticket.setPerson((request.personId() == null) ? null : 
-        personRepository.findById(request.personId())
-        .orElseThrow(() -> new PersonNotFoundException(request.personId())));
+        ticket.setPerson((request.personId() == null) ? null
+                : personRepository.findById(request.personId())
+                        .orElseThrow(() -> new PersonNotFoundException(request.personId())));
 
-        ticket.setEvent((request.eventId() == null) ? null : 
-        eventRepository.findById(request.eventId())
-        .orElseThrow(() -> new EventNotFoundException(request.eventId())));
+        ticket.setEvent((request.eventId() == null) ? null
+                : eventRepository.findById(request.eventId())
+                        .orElseThrow(() -> new EventNotFoundException(request.eventId())));
         ticket.setPrice(request.price());
         ticket.setType(request.type());
         ticket.setDiscount(request.discount());
         ticket.setNumber(request.number());
         ticket.setRefundable(request.refundable());
         ticket.setVenue(venueRepository.findById(request.venueId())
-        .orElseThrow(() -> new VenueNotFoundException(request.venueId())));
+                .orElseThrow(() -> new VenueNotFoundException(request.venueId())));
 
         ticketRepository.save(ticket);
 
@@ -154,12 +162,12 @@ import org.springframework.transaction.annotation.Transactional;
 
         Ticket ticket = getTicketById(request.ticketId());
         if (ticket.getPerson() != null && Objects.equals(ticket.getPerson().getId(),
-        request.buyerId())) {
+                request.buyerId())) {
             throw new PersonAlreadyOwnsThisTicketException(
                 String.format("Person with passport %s already own this ticket",
-                ticket.getPerson().getPassportID()));
+                    ticket.getPerson().getPassportID()));
         }
-        
+
         ticketRepository.sellTicketByPrice(request.buyerId(), request.ticketId(), request.price());
 
         WebSocketEvent event = new WebSocketEvent(WebSocketEventType.UPDATED, request.ticketId());
@@ -182,4 +190,4 @@ import org.springframework.transaction.annotation.Transactional;
 
         return modifiedRowsAmount;
     }
- }   
+}

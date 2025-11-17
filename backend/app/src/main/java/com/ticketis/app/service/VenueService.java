@@ -9,6 +9,7 @@ import com.ticketis.app.model.enums.WebSocketEventType;
 import com.ticketis.app.repository.VenueRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
@@ -21,7 +22,7 @@ public class VenueService {
     private final WebSocketEventController webSocketController;
 
     public List<Venue> getAllVenues() {
-        return venueRepository.findAll();
+        return venueRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Venue getVenueById(int id) {

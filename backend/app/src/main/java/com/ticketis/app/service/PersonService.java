@@ -11,6 +11,7 @@ import com.ticketis.app.repository.LocationRepository;
 import com.ticketis.app.repository.PersonRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +24,7 @@ public class PersonService {
     private final WebSocketEventController webSocketController;
 
     public List<Person> getAllPersons() {
-        return personRepository.findAll();
+        return personRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Person getPersonById(Long id) {
