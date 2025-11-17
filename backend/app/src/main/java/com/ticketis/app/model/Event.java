@@ -27,7 +27,6 @@ public class Event implements Serializable {
     private Integer id;
     
     
-    @NotNull
     @NotBlank
     // Поле не может быть null, Строка не может быть пустой
     private String name; 

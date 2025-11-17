@@ -39,7 +39,6 @@ public class Ticket implements Serializable {
     private Long id; 
     
     @NotBlank
-    @NotNull
     private String name; // Поле не может быть null, Строка не может быть пустой
     
     @NotNull

@@ -27,7 +27,7 @@ public class Venue implements Serializable {
     // Значение этого поля должно быть уникальным,
     // Значение этого поля должно генерироваться автоматически
     private Integer id; 
-    @NotNull
+    
     @NotBlank
     private String name; // Поле не может быть null, Строка не может быть пустой
     

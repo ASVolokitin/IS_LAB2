@@ -28,7 +28,6 @@ public class Location implements Serializable{
     @NotNull
     private Double z; // Поле не может быть null
 
-    @NotNull
     private String name; // Поле может быть null
 
     public Location(Float x, int y, Double z, String name) {
