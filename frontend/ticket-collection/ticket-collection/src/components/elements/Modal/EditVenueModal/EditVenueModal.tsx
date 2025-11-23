@@ -26,10 +26,10 @@ export const EditVenueModal = ({
   };
 
   const handleSubmit = (dto: VenueDTO) => {
-      updateVenue(venueId, dto)
-        .then(() => onClose())
-        .catch((err) => setServerError(err.response.data.message));
-    };
+    updateVenue(venueId, dto)
+      .then(() => onClose())
+      .catch((err) => setServerError(err.response.data.message));
+  };
 
   if (!isOpen) return null;
 

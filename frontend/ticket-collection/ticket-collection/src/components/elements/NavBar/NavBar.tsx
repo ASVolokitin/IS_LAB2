@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./NavBar.css";
 
@@ -7,12 +7,12 @@ export const NavBar = () => {
   const [activeTab, setActiveTab] = useState("");
   const location = useLocation();
 
-  const navItems = [
-    { path: "/", label: "Main" },
-    { path: "/sql", label: "SQL Queries" },
-    { path: "/tickets/create", label: "Create new ticket" },
-    { path: "/connected_entities", label: "Dashboard" }
-  ];
+  const navItems = useMemo(() => [
+  { path: "/", label: "Main" },
+  { path: "/sql", label: "SQL Queries" },
+  { path: "/tickets/create", label: "Create new ticket" },
+  { path: "/connected_entities", label: "Dashboard" }
+], []);
 
   useEffect(() => {
     setIsVisible(true);

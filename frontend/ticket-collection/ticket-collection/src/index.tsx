@@ -1,5 +1,4 @@
-import React, { Profiler, ProfilerOnRenderCallback } from "react";
-import ReactDOM from "react-dom/client";
+import React, { Profiler, ProfilerOnRenderCallback, StrictMode } from "react";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -17,6 +16,7 @@ import { CalculateGroupsPage } from "./components/pages/CalculateGroupsPage/Calc
 import { SellTicketPage } from "./components/pages/SellTicketPage/SellTicketPage";
 import MainPage from "./components/pages/MainPage/MainPage";
 import { webSocketService } from "./services/webSocketService";
+import ReactDOM from "react-dom/client";
 
 webSocketService.connect()
 
@@ -45,9 +45,7 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  // <React.StrictMode>
-      <RouterProvider router={router} />
-  // </React.StrictMode>
+    <RouterProvider router={router} />
 );
 
 reportWebVitals();
