@@ -25,7 +25,7 @@ public class DatabaseInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
     private static final String INIT_SCRIPT_PATH = "db/init/01-create-schema.sql";
     private static final String[] REQUIRED_TABLES = { "locations", "venues", "events", "persons", "coordinates",
-            "tickets" };
+            "tickets", "import_history" };
 
     private final DataSource dataSource;
 
@@ -51,11 +51,11 @@ public class DatabaseInitializer {
 
         for (String tableName : REQUIRED_TABLES) {
             try (ResultSet tables = metaData.getTables(null, null, tableName, types)) {
-                if (tables.next())
-                    return false;
+                if (!tables.next())
+                    return true;
             }
         }
-        return true;
+        return false;
     }
 
     private void runInitScript(Connection connection) throws SQLException, IOException {
