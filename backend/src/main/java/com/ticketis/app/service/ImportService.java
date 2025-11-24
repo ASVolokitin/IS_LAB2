@@ -11,6 +11,11 @@ import com.ticketis.app.exception.FileImportValidationException;
 import com.ticketis.app.exception.NoImportProcessorException;
 import com.ticketis.app.exception.UnableToGetNecessaryFieldException;
 import com.ticketis.app.importProcessor.ImportProcessor;
+import com.ticketis.app.model.ImportHistoryItem;
+import com.ticketis.app.model.Ticket;
+import com.ticketis.app.model.enums.ImportStatus;
+import com.ticketis.app.repository.ImportHistoryRepository;
+import com.ticketis.app.specification.GenericSpecification;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +30,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,8 +49,16 @@ public class ImportService {
     private final ObjectMapper objectMapper;
     private final List<ImportProcessor> importProcessors;
 
+    private final ImportHistoryRepository importHistoryRepository;
+
+    public Page<ImportHistoryItem> getImportsPage(Pageable pageable) {
+        return importHistoryRepository.findAll(pageable);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public ImportResponse uploadFile(MultipartFile file, String entityType) {
+
+        ImportHistoryItem importItem = createPendingImportItem(file.getOriginalFilename());
 
         validateFile(file);
 
@@ -58,14 +75,18 @@ public class ImportService {
                 throw new IllegalArgumentException("Only JSON files are supported for import");
             }
 
-            String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+            String uniqueFilename = importItem.getFilename();
             Path filePath = uploadPath.resolve(uniqueFilename);
+            importItem.setFilename(uniqueFilename);
+            importHistoryRepository.save(importItem);
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             log.info("File uploaded successfully: {}", uniqueFilename);
 
             String message = processImportFile(filePath, entityType);
+
+            updateImportStatus(importItem.getId(), ImportStatus.SUCCESS);
 
             return new ImportResponse(
                     uniqueFilename,
@@ -74,35 +95,43 @@ public class ImportService {
                     entityType);
 
         } catch (NoImportProcessorException e) {
-            log.error("No processor found for entity type: {}", entityType);
-            throw e; 
+            String errorStatus = String.format("No processor found for entity type: %s", entityType);
+            handleImportError(importItem, errorStatus, e);
+            throw e;
         } catch (FileImportValidationException e) {
-            log.error(e.getMessage());
+            handleImportError(importItem, e.getMessage(), e);
             throw e;
         } catch (UnableToGetNecessaryFieldException e) {
-            log.error(e.getMessage());
+            handleImportError(importItem, e.getMessage(), e);
             throw e;
         } catch (IllegalArgumentException e) {
-            log.error("Invalid argument: {}", e.getMessage(), e);
+            String errorStatus = String.format("Invalid argument: %s", e.getMessage());
+            handleImportError(importItem, errorStatus, e);
             throw e;
         } catch (JsonProcessingException e) {
-            log.error("JSON parsing error: {}", e.getMessage(), e);
+            String errorStatus = "JSON processing error";
+            handleImportError(importItem, errorStatus, e);
             throw new RuntimeException("JSON processing error", e);
         } catch (IOException e) {
-            log.error("Error uploading file: {}", e.getMessage(), e);
+            String errorStatus = "Error uploading file";
+            handleImportError(importItem, errorStatus, e);
             throw new FailedToUploadFileException(e.getMessage());
         } catch (RuntimeException e) {
             if (e.getCause() instanceof JsonProcessingException) {
                 JsonProcessingException jsonEx = (JsonProcessingException) e.getCause();
+                String errorStatus = "JSON parsing error";
+                handleImportError(importItem, errorStatus, jsonEx);
+            } else {
+                String errorStatus = "Unexpected error during import";
+                handleImportError(importItem, errorStatus, e);
             }
-            log.error("Unexpected error during import: {}", e.getMessage());
             throw new FailedToProcessImportException(e.getMessage());
         }
     }
 
-    private String processImportFile(Path filePath, String entityType) 
-            throws IOException, JsonProcessingException, FileImportValidationException, 
-                   UnableToGetNecessaryFieldException, NoImportProcessorException {
+    private String processImportFile(Path filePath, String entityType)
+            throws IOException, JsonProcessingException, FileImportValidationException,
+            UnableToGetNecessaryFieldException, NoImportProcessorException {
         log.info("Processing import file: {} for entity type: {}", filePath, entityType);
 
         List<JsonNode> entities = parseJsonFile(filePath);
@@ -183,5 +212,35 @@ public class ImportService {
         }
         return filename.substring(lastDotIndex + 1).toLowerCase();
     }
-}
 
+    private void handleImportError(ImportHistoryItem importItem, String errorMessage, Exception e) {
+        log.error(errorMessage, e);
+        updateImportStatusWithError(importItem.getId(), e.getMessage());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public ImportHistoryItem createPendingImportItem(String originalFilename) {
+        ImportHistoryItem importItem = new ImportHistoryItem();
+        importItem.setImportStatus(ImportStatus.PENDING);
+        importItem.setFilename(UUID.randomUUID().toString() + "_" + originalFilename);
+        ImportHistoryItem saved = importHistoryRepository.save(importItem);
+        importHistoryRepository.flush();
+        return saved;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateImportStatus(Long id, ImportStatus status) {
+        ImportHistoryItem item = importHistoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Import record not found"));
+        item.setImportStatus(status);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateImportStatusWithError(Long id, String errorMessage) {
+        System.out.println("Error!!!vjjj");
+        ImportHistoryItem item = importHistoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Import record not found"));
+        item.setImportStatus(ImportStatus.FAILED);
+        item.setResultDescription(errorMessage);
+    }
+}

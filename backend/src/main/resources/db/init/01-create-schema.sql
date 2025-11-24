@@ -50,3 +50,11 @@ CREATE TABLE IF NOT EXISTS tickets (
     refundable BOOLEAN NOT NULL,
     venue_id INTEGER NOT NULL REFERENCES venues(id)
 );
+
+CREATE TABLE IF NOT EXISTS import_history (
+     id SERIAL PRIMARY KEY,
+     filename VARCHAR(255) NOT NULL CHECK (filename <> ''),
+     imported_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     import_status VARCHAR(255) NOT NULL,
+     result_description VARCHAR(1024) NOT NULL DEFAULT '-' CHECK (result_description <> '')
+);
