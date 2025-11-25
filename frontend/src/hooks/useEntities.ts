@@ -38,17 +38,12 @@ export function useEntities<T>(
       const startTime = Date.now();
       switch (entityType) {
         case "tickets":
-          if (pageNumber !== undefined && pageSize !== undefined) {
-            pageResponse = await getTicketsPage(pageNumber, pageSize, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
+            pageResponse = await getTicketsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
             setEntitiesAmount(pageResponse.data.totalElements);
             response = { data: pageResponse.data.content };
             devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} tickets (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
             break;
-          } else {
-            response = await getAllTickets();
-            devLog.log(`[REFRESH] Fetched all tickets (${response.data.length}) in ${Date.now() - startTime}ms`);
-            break;
-          }
+
         case "import_history":
           pageResponse = await getImportsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
           setEntitiesAmount(pageResponse.data.totalElements);
@@ -57,33 +52,37 @@ export function useEntities<T>(
           break;
 
         case "coordinates":
-          pageResponse = await getCoordinatesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getCoordinatesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 8);
           response = { data: pageResponse.data.content };
+          setEntitiesAmount(pageResponse.data.totalElements);
           devLog.log(`[REFRESH] Fetched coordinates (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "persons":
-          pageResponse = await getPersonsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getPersonsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 8);
           response = { data: pageResponse.data.content };
+          setEntitiesAmount(pageResponse.data.totalElements);
           devLog.log(`[REFRESH] Fetched persons (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "locations":
-          pageResponse = await getLocationsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getLocationsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 8);
           response = { data: pageResponse.data.content };
+          setEntitiesAmount(pageResponse.data.totalElements);
           devLog.log(`[REFRESH] Fetched locations (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "events":
-          pageResponse = await getEventsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getEventsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 8);
           response = { data: pageResponse.data.content };
+          setEntitiesAmount(pageResponse.data.totalElements);
           devLog.log(`[REFRESH] Fetched events (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "venues":
-          pageResponse = await getVenuesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getVenuesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 8);
           response = { data: pageResponse.data.content };
-          response = await getVenuesPage(1, 5);
+          setEntitiesAmount(pageResponse.data.totalElements);
           devLog.log(`[REFRESH] Fetched venues (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
       }

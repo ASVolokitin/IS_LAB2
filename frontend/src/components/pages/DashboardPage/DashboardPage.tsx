@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { EntityData, EntityType } from "../../../types/ConnectedObject";
@@ -31,19 +31,32 @@ import { EditTicketModal } from "../../elements/Modal/EditTicketModal/EditTicket
 import { useEntities } from "../../../hooks/useEntities";
 import { devLog } from "../../../services/logger";
 import { convertResponseToFormData } from "../../converters/ResponseToFormDataConverter";
+import { PageNav } from "../../elements/PageNav/PageNav";
 
 export const EntitiesDashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [mappedEntities, setMappedEntities] = useState<EntityData[]>([]);
 
+  const [pageNumber, setPageNumber] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(8);
+  const [maxPageValue, setMaxPageValue] = useState<number>(0);
+  const page = useMemo(() => ({ page: pageNumber, size: pageSize }), [pageNumber, pageSize]);
+
+  const handlePageChange = (page: number) => {
+    const minPageValue = 0;
+    setPageNumber(Math.max(Math.min(page, maxPageValue), minPageValue));
+  };
+
+  
   const [selectedType, setSelectedType] = useState<EntityType>(() => {
     const saved = localStorage.getItem("selectedType");
     return (saved as EntityType) || "tickets";
   });
 
   const handleChangeSelectedType = (type: EntityType) => {
-    setSelectedType(type)
+    setSelectedType(type);
+    setPageNumber(0);
     localStorage.setItem("selectedType", type);
   }
 
@@ -63,10 +76,22 @@ export const EntitiesDashboard = () => {
   }, [setActiveModal]);
 
 
-  const hookedEntities = useEntities(selectedType).entities;
+  const { entities: hookedEntities, serverError, setServerError, entitiesAmount } = useEntities(selectedType, pageNumber, pageSize);
+
+  useEffect(() => {
+    setMaxPageValue(
+      Math.floor(
+        hookedEntities
+          ? entitiesAmount / pageSize -
+          Number(!Boolean(entitiesAmount % pageSize))
+          : 0
+      )
+    );
+  }, [hookedEntities, pageSize]);
 
   useEffect(() => {
     if (hookedEntities) {
+      devLog.log("FGH", hookedEntities, selectedType);
       const mapped = mapEntitiesByType(hookedEntities, selectedType);
       setMappedEntities(mapped);
     }
@@ -145,39 +170,6 @@ export const EntitiesDashboard = () => {
       });
   };
 
-  // const handleUpdate = async (id: number, type: EntityType, data: any) => {
-  //   try {
-  //     switch (type) {
-  //       case "tickets":
-  //         await updateTicket(id, data);
-  //         break;
-  //       case "coordinates":
-  //         await updateCoordinates(id, data);
-  //         break;
-  //       case "persons":
-  //         await updatePerson(id, data);
-  //         break;
-  //       case "venues":
-  //         await updateVenue(id, data);
-  //         break;
-  //       case "events":
-  //         await updateEvent(id, data);
-  //         break;
-  //       case "locations":
-  //         await updateLocation(id, data);
-  //         break;
-  //       default:
-  //         throw new Error(`Unknown entity type: ${type}`);
-  //     }
-  //   } catch (error: any) {
-  //     devLog.error(`Error updating ${type}:`, error);
-  //     const serverErrorMessage = error.response.data.message;
-  //     setError(serverErrorMessage || "Error");
-  //     console.log("ERROR", error);
-  //     setTimeout(() => setError(null), 5000);
-  //   }
-  // }
-
   const handleDelete = async (id: number, type: EntityType) => {
 
     try {
@@ -203,12 +195,9 @@ export const EntitiesDashboard = () => {
         default:
           throw new Error(`Unknown entity type: ${type}`);
       }
-      // setMappedEntities((prev) => prev.filter((entity) => entity.id !== id));
     } catch (error: any) {
-      // console.error("Error deleting entity:", error);
       const serverErrorMessage = error.response.data.message;
       setError(serverErrorMessage || "Error");
-      // console.log("ERROR", error);
       setTimeout(() => setError(null), 5000);
     }
   };
@@ -293,7 +282,14 @@ export const EntitiesDashboard = () => {
                 />
               ))}
             </div>
+            <PageNav
+            page={page.page}
+            size={page.size}
+            ticketsAmount={entitiesAmount}
+            onPageChange={handlePageChange}
+          />
           </main>
+          
         </div>
         {activeModal.type === "editVenues" && (
           <>
