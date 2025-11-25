@@ -101,7 +101,13 @@ public class TicketService {
         }
     }
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Long createTicket(TicketRequest request) {
+        if (ticketRepository.existsByName(request.name())) {
+            throw new TicketNameAlreadyExistsException(
+                    String.format("Ticket with name '%s' already exists", request.name()));
+        }
+
         Ticket ticket = new Ticket(
                 request.name(),
                 coordinatesRepository.findById(request.coordinatesId())
@@ -124,6 +130,7 @@ public class TicketService {
                         .orElseThrow(() -> new VenueNotFoundException(request.venueId())));
 
         ticket = ticketRepository.save(ticket);
+        em.flush();
 
         WebSocketEvent event = new WebSocketEvent(WebSocketEventType.CREATED, ticket.getId());
         webSocketController.sendTicketEvent(event);
@@ -131,9 +138,52 @@ public class TicketService {
         return ticket.getId();
     }
 
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Long createTicketRepeatable(TicketRequest request) {
+        if (ticketRepository.existsByName(request.name())) {
+            throw new TicketNameAlreadyExistsException(
+                    String.format("Ticket with name '%s' already exists", request.name()));
+        }
+
+        Ticket ticket = new Ticket(
+                request.name(),
+                coordinatesRepository.findById(request.coordinatesId())
+                        .orElseThrow(() -> new CoordinatesNotFoundException(request.coordinatesId())),
+                (request.personId() == null) ? null
+                        : personRepository
+                                .findById(request.personId())
+
+                                .orElseThrow(() -> new PersonNotFoundException(request.personId())),
+                (request.eventId() == null) ? null
+                        : eventRepository
+                                .findById(request.eventId())
+                                .orElseThrow(() -> new EventNotFoundException(request.eventId())),
+                request.price(),
+                request.type(),
+                request.discount(),
+                request.number(),
+                request.refundable(),
+                venueRepository.findById(request.venueId())
+                        .orElseThrow(() -> new VenueNotFoundException(request.venueId())));
+
+        ticket = ticketRepository.save(ticket);
+        em.flush();
+
+        WebSocketEvent event = new WebSocketEvent(WebSocketEventType.CREATED, ticket.getId());
+        webSocketController.sendTicketEvent(event);
+
+        return ticket.getId();
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void updateTicket(Long id, TicketRequest request) {
 
         Ticket ticket = getTicketById(id);
+
+        if (ticketRepository.existsByNameExcludingId(request.name(), id)) {
+            throw new TicketNameAlreadyExistsException(
+                    String.format("Ticket with name '%s' already exists", request.name()));
+        }
 
         ticket.setName(request.name());
         ticket.setCoordinates(coordinatesRepository.findById(request.coordinatesId())

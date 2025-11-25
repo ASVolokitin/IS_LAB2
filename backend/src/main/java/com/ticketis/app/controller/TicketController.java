@@ -98,18 +98,20 @@ public class TicketController {
         return new ResponseEntity<>(successfulDeletionById("ticket", id), HttpStatus.OK);
     }
 
+    // MUTITHREAD UNIQUE CREATE
 
+    // should create once, then return conflicts
     @PostMapping
     public ResponseEntity<?> createTicket(@Valid @RequestBody TicketRequest request) {
         Long id = ticketService.createTicket(request);
         return new ResponseEntity<>(successfulCreationById("ticket", id), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateTickets(
-            @PathVariable Long id, @Valid @RequestBody TicketRequest request) {
-        ticketService.updateTicket(id, request);
-        return new ResponseEntity<>(successfulUpdateById("ticket", id), HttpStatus.OK);
+    // should create multiple entities
+    @PostMapping("/repeatable")
+    public ResponseEntity<?> createTicketRepeatable(@Valid @RequestBody TicketRequest request) {
+        Long id = ticketService.createTicketRepeatable(request);
+        return new ResponseEntity<>(successfulCreationById("ticket", id), HttpStatus.CREATED);
     }
 
     // MULTITHREAD UPDATE
@@ -164,5 +166,12 @@ public class TicketController {
     public ResponseEntity<?> unbookTickets(@RequestParam Long personId) {
         int modifiedRowsAmount = ticketService.unbookByPersonId(personId);
         return new ResponseEntity<>(modifiedRowsAmount, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTickets(
+            @PathVariable Long id, @Valid @RequestBody TicketRequest request) {
+        ticketService.updateTicket(id, request);
+        return new ResponseEntity<>(successfulUpdateById("ticket", id), HttpStatus.OK);
     }
 }
