@@ -1,6 +1,6 @@
 import { Ticket } from "../Ticket";
 
-interface Column<T> {
+export interface Column<T> {
   label: string;
   field: keyof T | string;
 }
