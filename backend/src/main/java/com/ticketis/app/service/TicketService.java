@@ -55,7 +55,7 @@ public class TicketService {
 
         for (var entry : filters.entrySet()) {
             Specification<Ticket> filterSpec =
-            GenericSpecification.stringContains(entry.getKey(), entry.getValue());
+             GenericSpecification.stringContains(entry.getKey(), entry.getValue());
             if (filterSpec != null) {
                 spec = (spec == null) ? filterSpec : spec.and(filterSpec);
             }
@@ -71,20 +71,22 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
+    @Transactional
     public void deleteTicketById(Long id) {
-        Ticket ticket = getTicketById(id);
-        ticketRepository.delete(ticket);
 
-        WebSocketEvent event = new WebSocketEvent(WebSocketEventType.DELETED, id);
-        webSocketController.sendTicketEvent(event);
+        int deletedCount = ticketRepository.deleteByIdAndReturnCount(id);
+        if (deletedCount == 0) throw new TicketNotFoundException(id);
+        else {
+            WebSocketEvent event = new WebSocketEvent(WebSocketEventType.DELETED, id);
+            webSocketController.sendTicketEvent(event);
+        }
     }
 
     public Long createTicket(TicketRequest request) {
         Ticket ticket = new Ticket(
                 request.name(),
                 coordinatesRepository.findById(request.coordinatesId())
-                        .orElseThrow(()
-                         -> new CoordinatesNotFoundException(request.coordinatesId())),
+                        .orElseThrow(() -> new CoordinatesNotFoundException(request.coordinatesId())),
                 (request.personId() == null) ? null
                         : personRepository
                                 .findById(request.personId())
@@ -164,8 +166,8 @@ public class TicketService {
         if (ticket.getPerson() != null && Objects.equals(ticket.getPerson().getId(),
                 request.buyerId())) {
             throw new PersonAlreadyOwnsThisTicketException(
-                String.format("Person with passport %s already own this ticket",
-                    ticket.getPerson().getPassportID()));
+                    String.format("Person with passport %s already own this ticket",
+                            ticket.getPerson().getPassportID()));
         }
 
         ticketRepository.sellTicketByPrice(request.buyerId(), request.ticketId(), request.price());

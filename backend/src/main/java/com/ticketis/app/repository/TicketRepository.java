@@ -2,11 +2,15 @@ package com.ticketis.app.repository;
 
 import com.ticketis.app.dto.sql.CoordinatesTicketCount;
 import com.ticketis.app.model.Ticket;
+import jakarta.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -37,4 +41,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>,
     @Modifying
     @Query(value = "UPDATE tickets SET person_id = NULL where person_id = ?1", nativeQuery = true)
     public int unbookByPersonId(Long personId);
+
+    @Modifying
+    @Query("DELETE FROM Ticket t WHERE t.id = :id")
+    int deleteByIdAndReturnCount(@Param("id") Long id);
 }
