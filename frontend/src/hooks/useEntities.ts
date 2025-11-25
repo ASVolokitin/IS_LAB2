@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getAllTickets, getCoordinates, getEvents, getImportsPage, getLocations, getPersons, getTicketsPage, getVenues } from "../services/api";
+import { getAllTickets, getCoordinates, getCoordinatesPage, getEvents, getEventsPage, getImportsPage, getLocations, getLocationsPage, getPersons, getPersonsPage, getTicketsPage, getVenues, getVenuesPage } from "../services/api";
 import { EntityType } from "../types/ConnectedObject";
 import { webSocketService } from "../services/webSocketService";
 import { SortOrder } from "../types/SortOrder";
@@ -34,11 +34,12 @@ export function useEntities<T>(
     if (!entityType) return;
     try {
       let response;
+      let pageResponse;
       const startTime = Date.now();
       switch (entityType) {
         case "tickets":
           if (pageNumber !== undefined && pageSize !== undefined) {
-            const pageResponse = await getTicketsPage(pageNumber, pageSize, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
+            pageResponse = await getTicketsPage(pageNumber, pageSize, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
             setEntitiesAmount(pageResponse.data.totalElements);
             response = { data: pageResponse.data.content };
             devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} tickets (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
@@ -49,34 +50,40 @@ export function useEntities<T>(
             break;
           }
         case "import_history":
-          const pageResponse = await getImportsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          pageResponse = await getImportsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
           setEntitiesAmount(pageResponse.data.totalElements);
           response = { data: pageResponse.data.content };
           devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} tickets (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
           break;
-          
+
         case "coordinates":
-          response = await getCoordinates();
+          pageResponse = await getCoordinatesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          response = { data: pageResponse.data.content };
           devLog.log(`[REFRESH] Fetched coordinates (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "persons":
-          response = await getPersons();
+          pageResponse = await getPersonsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          response = { data: pageResponse.data.content };
           devLog.log(`[REFRESH] Fetched persons (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "locations":
-          response = await getLocations();
+          pageResponse = await getLocationsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          response = { data: pageResponse.data.content };
           devLog.log(`[REFRESH] Fetched locations (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "events":
-          response = await getEvents();
+          pageResponse = await getEventsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          response = { data: pageResponse.data.content };
           devLog.log(`[REFRESH] Fetched events (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
 
         case "venues":
-          response = await getVenues();
+          pageResponse = await getVenuesPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
+          response = { data: pageResponse.data.content };
+          response = await getVenuesPage(1, 5);
           devLog.log(`[REFRESH] Fetched venues (${response.data.length}) in ${Date.now() - startTime}ms`);
           break;
       }

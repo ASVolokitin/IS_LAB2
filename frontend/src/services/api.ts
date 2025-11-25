@@ -19,20 +19,30 @@ const api = axios.create({
 
 export const getTicketsPage = (page: number, size: number, sortField?: string, sortOrder?: SortOrder, filters?: string) => api.get(`/tickets?page=${page}&size=${size}${sortOrder ? `&sort=${sortField},${sortOrder}` : ""}${filters ? filters : ""}`);
 
+export const getCoordinatesPage = (page: number, size: number) => api.get(`/coordinates?page=${page}&size=${size}&sort=id,asc`);
+
+export const getPersonsPage = (page: number, size: number) => api.get(`/persons?page=${page}&size=${size}&sort=id,asc`);
+
+export const getEventsPage = (page: number, size: number) => api.get(`/events?page=${page}&size=${size}&sort=id,asc`);
+
+export const getVenuesPage = (page: number, size: number) => api.get(`/venues?page=${page}&size=${size}&sort=id,asc`);
+
+export const getLocationsPage = (page: number, size: number) => api.get(`/locations?page=${page}&size=${size}&sort=id,asc`);
+
 export const getImportsPage = (page: number, size: number) => api.get(`/import?page=${page}&size=${size}&sort=id,desc`);
 
 
 export const getAllTickets = () => api.get("/tickets/all");
 
-export const getCoordinates = () => api.get("/coordinates");
+export const getCoordinates = () => api.get("/coordinates/all");
 
-export const getPersons = () => api.get("/persons");
+export const getPersons = () => api.get("/persons/all");
 
-export const getEvents = () => api.get("/events");
+export const getEvents = () => api.get("/events/all");
 
-export const getVenues = () => api.get("/venues");
+export const getVenues = () => api.get("/venues/all");
 
-export const getLocations = () => api.get("/locations");
+export const getLocations = () => api.get("/locations/all");
 
 
 
