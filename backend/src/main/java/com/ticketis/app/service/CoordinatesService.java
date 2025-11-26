@@ -54,6 +54,16 @@ public class CoordinatesService {
         return coordinates.getId();
     }
 
+    public Long createCoordinates(Coordinates coordinates) {
+        System.out.println("Creating coordinates: x=" + coordinates.getX() + ", y=" + coordinates.getY());
+        coordinates = coordinatesRepository.save(coordinates);
+
+        WebSocketEvent event = new WebSocketEvent(WebSocketEventType.CREATED, coordinates.getId());
+        webSocketController.sendCoordinatesEvent(event);
+
+        return coordinates.getId();
+    }
+
     public void updateCoordinates(Long id, CoordinatesRequest request) {
         Coordinates coordinates = getCoordinatesById(id);
         coordinates.setX(request.x());
