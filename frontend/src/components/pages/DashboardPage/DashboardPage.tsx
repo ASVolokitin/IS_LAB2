@@ -91,7 +91,6 @@ export const EntitiesDashboard = () => {
 
   useEffect(() => {
     if (hookedEntities) {
-      devLog.log("FGH", hookedEntities, selectedType);
       const mapped = mapEntitiesByType(hookedEntities, selectedType);
       setMappedEntities(mapped);
     }
@@ -285,7 +284,7 @@ export const EntitiesDashboard = () => {
             <PageNav
             page={page.page}
             size={page.size}
-            ticketsAmount={entitiesAmount}
+            entitiesAmount={entitiesAmount}
             onPageChange={handlePageChange}
           />
           </main>
