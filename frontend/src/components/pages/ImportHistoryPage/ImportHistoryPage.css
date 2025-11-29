@@ -86,3 +86,168 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+.batch-toggle-btn {
+    background: linear-gradient(135deg, #7661C2 0%, #5a46a0 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    min-width: 140px;
+}
+
+.batch-toggle-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #8a75d4 0%, #6b55b8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.batch-toggle-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.batch-header-row {
+    background-color: rgba(118, 97, 194, 0.1);
+}
+
+.batch-header-row td {
+    padding: 12px 20px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    border-top: 2px solid rgba(118, 97, 194, 0.3);
+}
+
+.batch-row {
+    background-color: rgba(118, 97, 194, 0.05);
+}
+
+.batch-row td {
+    padding: 10px 20px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.batch-row:hover {
+    background-color: rgba(118, 97, 194, 0.1);
+}
+
+.batch-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.batch-status-success {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.batch-status-failed {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.batch-status-processing {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.batch-status-pending {
+    background-color: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.batch-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    min-width: 150px;
+}
+
+.batch-progress span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.batch-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.batch-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7661C2 0%, #5a46a0 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.import-upload-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.upload-import-button {
+    background: linear-gradient(135deg, #7661C2, #5a46a0);
+    border: 1px solid #7661C2;
+    border-radius: 12px;
+    padding: 14px 28px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.3s ease;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 4px 12px -1px rgba(118, 97, 194, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.upload-import-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #8470cc, #6550b0);
+    border-color: #8470cc;
+    box-shadow: 
+        0 8px 20px -3px rgba(118, 97, 194, 0.4),
+        0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.upload-import-button:active:not(:disabled) {
+    background: linear-gradient(135deg, #6a56b0, #51408f);
+    transform: translateY(0);
+    box-shadow: 
+        0 2px 6px -1px rgba(118, 97, 194, 0.3),
+        0 1px 3px -1px rgba(0, 0, 0, 0.1);
+}
+
+.upload-import-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+
+
+
+

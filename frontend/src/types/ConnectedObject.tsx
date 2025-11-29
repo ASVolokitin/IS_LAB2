@@ -1,4 +1,4 @@
-export type EntityType = 'tickets' | 'persons' | 'venues' | 'coordinates' | 'events' | 'locations' | 'import_history';
+export type EntityType = 'tickets' | 'persons' | 'venues' | 'coordinates' | 'events' | 'locations' | 'import_history' | 'import_batch';
 
 export interface EntityData {
   id: number;

@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getAllTickets, getCoordinates, getCoordinatesPage, getEvents, getEventsPage, getImportsPage, getLocations, getLocationsPage, getPersons, getPersonsPage, getTicketsPage, getVenues, getVenuesPage } from "../services/api";
+import { getAllTickets, getCoordinates, getCoordinatesPage, getEvents, getEventsPage, getImportBatchesByHistoryItemId, getImportsPage, getLocations, getLocationsPage, getPersons, getPersonsPage, getTicketsPage, getVenues, getVenuesPage } from "../services/api";
 import { EntityType } from "../types/ConnectedObject";
 import { webSocketService } from "../services/webSocketService";
 import { SortOrder } from "../types/SortOrder";
 import { devLog } from "../services/logger";
 import { Filter } from "../interfaces/FilterInterface";
 import { buildFilterParams } from "../components/elements/FilterControls/FilterControls";
-import { WebSocketEvent } from "../types/WebSocketEvent";
-import { IMessage } from "@stomp/stompjs";
 
 
 export function useEntities<T>(
@@ -16,16 +14,17 @@ export function useEntities<T>(
   pageSize?: number,
   sortField?: string,
   sortOrder?: SortOrder,
-  filters?: Filter
+  filters?: Filter,
+  entityId?: number
 ) {
   const [entities, setEntities] = useState<T[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
   const [entitiesAmount, setEntitiesAmount] = useState<number>(-1);
 
-  const paramsRef = useRef({ pageNumber, pageSize, sortField, sortOrder, filters });
+  const paramsRef = useRef({ pageNumber, pageSize, sortField, sortOrder, filters, entityId });
 
   useEffect(() => {
-    paramsRef.current = { pageNumber, pageSize, sortField, sortOrder, filters };
+    paramsRef.current = { pageNumber, pageSize, sortField, sortOrder, filters, entityId };
   }, [pageNumber, pageSize, sortField, sortOrder, filters]);
 
 
@@ -40,17 +39,26 @@ export function useEntities<T>(
       const startTime = Date.now();
       switch (entityType) {
         case "tickets":
-            pageResponse = await getTicketsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
-            setEntitiesAmount(pageResponse.data.totalElements);
-            response = { data: pageResponse.data.content };
-            devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} tickets (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
-            break;
+          pageResponse = await getTicketsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5, sortField, sortOrder, filters ? buildFilterParams(filters) : "");
+          setEntitiesAmount(pageResponse.data.totalElements);
+          response = { data: pageResponse.data.content };
+          devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} ticket(s) (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
+          break;
 
         case "import_history":
           pageResponse = await getImportsPage(pageNumber ? pageNumber : 0, pageSize ? pageSize : 5);
           setEntitiesAmount(pageResponse.data.totalElements);
           response = { data: pageResponse.data.content };
-          devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} tickets (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
+          devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} history item(s) (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
+          break;
+
+        case "import_batch":
+          if (entityId !== undefined) {
+            pageResponse = await getImportBatchesByHistoryItemId(entityId);
+            setEntitiesAmount(pageResponse.data.totalElements);
+            response = { data: pageResponse.data.content };
+            devLog.log(`[REFRESH] Fetched ${pageResponse.data.content.length} history item(s) (page ${pageNumber}, size ${pageSize}) in ${Date.now() - startTime}ms`);
+          }
           break;
 
         case "coordinates":
@@ -105,17 +113,9 @@ export function useEntities<T>(
 
   useEffect(() => {
     refreshEntities();
-    const subscription = webSocketService.subscribe(`/topic/${entityType}`, (msg: IMessage) => {
-      try {
-        const event: WebSocketEvent = JSON.parse(msg.body);
-        devLog.log(`[WS] Received event for ${entityType}:`, event);
-        devLog.log(`[WS] Event type: ${event.eventType}, Entity ID: ${event.entityId}, Timestamp: ${event.timestamp}`);
-
-        refreshEntities();
-      } catch (error) {
-        devLog.error(`[WS] Error parsing WebSocket message:`, error);
-        refreshEntities();
-      }
+    const subscription = webSocketService.subscribe(`/topic/${entityType}`, () => {
+      devLog.log(`[WS] Refreshing entities for type: ${entityType}`);
+      refreshEntities();
     });
     return () => {
       devLog.log(`[WS] Unsubscribing from topic: /topic/${entityType}`);
@@ -123,6 +123,6 @@ export function useEntities<T>(
     };
   }, [entityType]);
 
-  return { entities, entitiesAmount, serverError, setServerError };
+  return { entities, entitiesAmount, serverError, setServerError, refreshEntities };
 }
 

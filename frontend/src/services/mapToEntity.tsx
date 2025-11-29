@@ -101,6 +101,17 @@ export const mapImportHistoryItemToEntity = (importHistoryItem: ImportHistoryIte
   },
 });
 
+export const mapImportBatchoEntity = (importHistoryItem: ImportHistoryItem): EntityData => ({
+  id: importHistoryItem.id,
+  title: importHistoryItem.filename,
+  description: importHistoryItem.resultDescription  || "No description",
+  type: "import_history",
+  data: {
+    importedAt: importHistoryItem.importedAt,
+    importStatus: importHistoryItem.importStatus,
+  },
+});
+
 export const mapEntitiesByType = (
   entities: any[],
   type: EntityType
@@ -112,7 +123,8 @@ export const mapEntitiesByType = (
     venues: mapVenueToEntity,
     events: mapEventToEntity,
     locations: mapLocationToEntity,
-    import_history: mapImportHistoryItemToEntity
+    import_history: mapImportHistoryItemToEntity,
+    import_batch: mapImportBatchoEntity,
   };
 
   return entities.map(mapper[type]);

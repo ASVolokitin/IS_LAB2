@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { importTableColumns } from "../../../interfaces/dataRepresentation/importTableColumns";
 import { ImportHistoryItem } from "../../../interfaces/ImportHistoryItem";
+import { ImportBatch } from "../../../interfaces/ImportBatch";
 import { renderCell } from "../../../services/tableUtils";
 import "../../../sharedStyles/Table.css";
 
 interface ImportTableProps {
     imports: ImportHistoryItem[];
+    getBatches: (importHistoryId: number) => ImportBatch[];
+    isLoading: (importHistoryId: number) => boolean;
+    refreshBatches: (importHistoryId: number) => void;
 }
 
 const renderStatusCell = (status: any) => {
@@ -50,7 +55,69 @@ const renderDescriptionCell = (description: any) => {
     );
 };
 
-export const ImportHistoryTable = ({ imports }: ImportTableProps) => {
+const renderBatchStatus = (status: string) => {
+    const statusUpper = String(status || "").toUpperCase();
+    let statusClass = "batch-status";
+    
+    if (statusUpper === "COMPLETED" || statusUpper === "SUCCESS") {
+        statusClass += " batch-status-success";
+    } else if (statusUpper === "FAILED" || statusUpper === "ERROR") {
+        statusClass += " batch-status-failed";
+    } else if (statusUpper === "PROCESSING" || statusUpper === "IN_PROGRESS") {
+        statusClass += " batch-status-processing";
+    } else if (statusUpper === "PENDING") {
+        statusClass += " batch-status-pending";
+    }
+    
+    return (
+        <span className={statusClass}>{status}</span>
+    );
+};
+
+const BatchRow = ({ batch }: { batch: ImportBatch }) => {
+    const progress = batch.totalRecords > 0 
+        ? Math.round((batch.processedRecords / batch.totalRecords) * 100) 
+        : 0;
+    
+    return (
+        <tr className="batch-row">
+            <td></td>
+            <td>Batch #{batch.batchNumber}</td>
+            <td>{renderBatchStatus(batch.batchStatus)}</td>
+            <td>
+                <div className="batch-progress">
+                    <span>{batch.processedRecords} / {batch.totalRecords}</span>
+                    <div className="batch-progress-bar">
+                        <div 
+                            className="batch-progress-fill" 
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </td>
+            <td>{batch.batchSize}</td>
+            <td></td>
+        </tr>
+    );
+};
+
+export const ImportHistoryTable = ({ imports, getBatches, isLoading, refreshBatches }: ImportTableProps) => {
+    const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+    const toggleRow = (importId: number) => {
+        setExpandedRows(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(importId)) {
+                newSet.delete(importId);
+            } else {
+                newSet.add(importId);
+                if (!isLoading(importId)) {
+                    refreshBatches(importId);
+                }
+            }
+            return newSet;
+        });
+    };
 
     return (
         <table>
@@ -64,39 +131,75 @@ export const ImportHistoryTable = ({ imports }: ImportTableProps) => {
                             {col.label}
                         </th>
                     ))}
+                    <th>Batches</th>
                 </tr>
             </thead>
             {imports && (
                 <tbody>
-                    {imports.map((row) => (
-                        <tr key={row.id}>
-                            {importTableColumns.map((col) => {
-                                if (col.field === "importStatus") {
-                                    return (
-                                        <td key={col.field}>
-                                            {renderStatusCell(renderCell(row, col.field))}
-                                        </td>
-                                    );
-                                } else if (col.field === "resultDescription") {
-                                    return (
-                                        <td key={col.field} className="description-td">
-                                            {renderDescriptionCell(renderCell(row, col.field))}
-                                        </td>
-                                    );
-                                } else {
-                                    return <td key={col.field}>{renderCell(row, col.field)}</td>;
-                                }
-                            })}
-                            <td>
-                                <div className="button-container">
-
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                    {imports.map((row) => {
+                        const isExpanded = expandedRows.has(row.id);
+                        const batches = getBatches(row.id);
+                        const loading = isLoading(row.id);
+                        
+                        return (
+                            <>
+                                <tr key={row.id}>
+                                    {importTableColumns.map((col) => {
+                                        if (col.field === "importStatus") {
+                                            return (
+                                                <td key={col.field}>
+                                                    {renderStatusCell(renderCell(row, col.field))}
+                                                </td>
+                                            );
+                                        } else if (col.field === "resultDescription") {
+                                            return (
+                                                <td key={col.field} className="description-td">
+                                                    {renderDescriptionCell(renderCell(row, col.field))}
+                                                </td>
+                                            );
+                                        } else {
+                                            return <td key={col.field}>{renderCell(row, col.field)}</td>;
+                                        }
+                                    })}
+                                    <td>
+                                        <div className="button-container">
+                                            <button
+                                                onClick={() => toggleRow(row.id)}
+                                                className="batch-toggle-btn"
+                                            >
+                                                {isExpanded ? "Hide" : "Show"} Batches
+                                                {batches.length > 0 && ` (${batches.length})`}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {isExpanded && (
+                                    <>
+                                        { batches.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={importTableColumns.length + 1} style={{ textAlign: "center", padding: "1rem" }}>
+                                                    No batches found
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            <>
+                                                <tr className="batch-header-row">
+                                                    <td colSpan={importTableColumns.length + 1}>
+                                                        <strong>Batches ({batches.length}):</strong>
+                                                    </td>
+                                                </tr>
+                                                {batches.map((batch) => (
+                                                    <BatchRow key={batch.id} batch={batch} />
+                                                ))}
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        );
+                    })}
                 </tbody>
             )}
         </table>
-
-        )
-    }
+    );
+}

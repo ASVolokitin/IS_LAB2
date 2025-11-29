@@ -44,6 +44,18 @@ export const getVenues = () => api.get("/venues/all");
 
 export const getLocations = () => api.get("/locations/all");
 
+export const getImportBatchesByHistoryItemId = (historyItemId: number) => api.get(`/import-batches/${historyItemId}`);
+
+export const uploadImportFile = (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("entityType", "ticket");
+    return axios.post("http://localhost:8081/api/import", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
+};
 
 
 export const createTicket = (ticketData: TicketDTO) => api.post("/tickets", ticketData);
