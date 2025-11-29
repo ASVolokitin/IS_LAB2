@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -43,7 +44,7 @@ public class Ticket implements Serializable {
     
     @NotNull
     @Valid
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "coordinates_id")
     private Coordinates coordinates; // Поле не может быть null
     
@@ -53,12 +54,12 @@ public class Ticket implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date creationDate; 
     
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @Valid
     @JoinColumn(name = "person_id")
     private Person person; // Поле может быть null
     
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @Valid
     @JoinColumn(name = "event_id")
     private Event event; // Поле может быть null
@@ -81,7 +82,7 @@ public class Ticket implements Serializable {
     @NotNull
     private Boolean refundable; // Поле не может быть null
     
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @Valid
     @JoinColumn(name = "venue_id")
     @NotNull
