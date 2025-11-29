@@ -17,7 +17,7 @@ public class JpaConfig {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
 
-        em.setPackagesToScan("com.ticketis.app.model", "com.ticketis.app.converter");
+        em.setPackagesToScan("com.ticketis.app.model", "com.ticketis.app.converter", "com.ticketis.app.dto.jms");
 
         em.setPersistenceProviderClass(PersistenceProvider.class);
         em.setJpaVendorAdapter(new EclipseLinkJpaVendorAdapter());
