@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +20,11 @@ public class FileStorageService {
     @Value("${app.import.upload-dir:uploads/import}")
     private String uploadDir;
 
-    public String storeFile(MultipartFile file) throws IOException {
+    public String storeFile(MultipartFile file, String uniqueFilename) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
-
-        String uniqueFilename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = uploadPath.resolve(uniqueFilename);
         
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
