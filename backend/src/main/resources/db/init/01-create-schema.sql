@@ -52,13 +52,26 @@ CREATE TABLE IF NOT EXISTS tickets (
 );
 
 CREATE TABLE IF NOT EXISTS import_history (
-     id SERIAL PRIMARY KEY,
-     filename VARCHAR(255) NOT NULL CHECK (filename <> ''),
-     imported_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-     entity_type VARCHAR(255) NOT NULL,
-     processed_records INTEGER,
-     total_records INTEGER,
-     error_count INTEGER,
-     import_status VARCHAR(255) NOT NULL,
-     result_description VARCHAR(1024) NOT NULL DEFAULT '-' CHECK (result_description <> '')
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL CHECK (filename <> ''),
+    imported_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    entity_type VARCHAR(255) NOT NULL,
+    processed_records INTEGER,
+    total_records INTEGER,
+    error_count INTEGER,
+    import_status VARCHAR(255) NOT NULL,
+    result_description VARCHAR(1024) NOT NULL DEFAULT '-' CHECK (result_description <> '')
 );
+
+CREATE TABLE IF NOT EXISTS import_batches (
+    id SERIAL PRIMARY KEY,
+    import_id INTEGER NOT NULL REFERENCES import_history(id),
+    batch_number INTEGER NOT NULL CHECK (batch_number >= 0),
+    batch_size INTEGER NOT NULL CHECK (batch_size >= 0),
+    batch_status VARCHAR(255) NOT NULL,
+    records TEXT,
+    total_records INTEGER NOT NULL CHECK (total_records >= 0),
+    processed_records INTEGER NOT NULL CHECK (processed_records >= 0)
+);
+
+CREATE INDEX ticket_name ON tickets USING HASH (name);
