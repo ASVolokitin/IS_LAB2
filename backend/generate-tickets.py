@@ -4,6 +4,8 @@ import sys
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+import string
+import secrets
 
 TICKET_TYPES = ["VIP", "USUAL", "BUDGETARY", "CHEAP"]
 VENUE_TYPES = ["PUB", "LOFT", "OPEN_AREA", "MALL"]
@@ -23,6 +25,7 @@ LOCATION_NAMES = [
 ]
 
 PASSPORT_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+alphabet = string.ascii_letters + string.digits
 
 
 def random_int(min_val, max_val):
@@ -58,13 +61,14 @@ def random_date():
 
 def random_passport(ticket_num):
     """Generate random passport ID (10 characters)"""
-    return ''.join(str(ticket_num))
-
+    return ''.join(secrets.choice(alphabet) for _ in range(10))
 
 def generate_ticket(ticket_num):
     """Generate a single ticket JSON object"""
     ticket = {
-        "name": f"Ticket-{ticket_num}",
+        # "name": f"Ticket-{ticket_num}",
+        "name": f"{''.join(secrets.choice(alphabet) for _ in range(18))}",
+
         "coordinates": {
             "x": random_int(-200, 1000),
             "y": round(random_double(-4.0, 1000.0), 6)
@@ -89,7 +93,7 @@ def generate_ticket(ticket_num):
         person = {
             "eyeColor": random_element(COLORS),
             "hairColor": random_element(COLORS),
-            "passportID": random_passport(ticket_num)
+            "passportID": random_passport(ticket_num) + str(ticket_num)
         }
         
         if random.random() < 0.7:
